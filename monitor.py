@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import argparse
 import bottle
 import json
 import os
@@ -48,4 +49,8 @@ def redirect():
     return r
 
 
-bottle.run()
+parser = argparse.ArgumentParser()
+parser.add_argument('--port', type=int, default=8080)
+args = parser.parse_args()
+
+bottle.run(port=args.port)
