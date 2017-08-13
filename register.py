@@ -4,9 +4,9 @@ import argparse
 import os
 import sqlite3
 import sys
-import uuid
 
 from common import connect_db
+from common import gen_id
 
 
 def main():
@@ -15,7 +15,7 @@ def main():
     parser.add_argument('log')
     args = parser.parse_args()
 
-    id_ = uuid.uuid4().node
+    id_ = gen_id()
     path = os.path.abspath(args.log)
 
     conn = connect_db()

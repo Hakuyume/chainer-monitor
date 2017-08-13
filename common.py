@@ -1,5 +1,10 @@
 import os
 import sqlite3
+import uuid
+
+
+def gen_id():
+    return uuid.uuid4().node
 
 
 def connect_db():
