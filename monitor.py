@@ -60,8 +60,6 @@ class Monitor(bottle.Bottle):
             'content': content}
 
     def new_plot(self):
-        cur = self.conn.cursor()
-
         params = self.request.params
 
         id_ = gen_id()
@@ -70,8 +68,8 @@ class Monitor(bottle.Bottle):
         else:
             comment = ''
 
-        cur.execute(r'INSERT INTO plots VALUES(?,?)', (id_, comment))
-        self.conn.commit()
+        with self.conn:
+            self.conn.execute(r'INSERT INTO plots VALUES(?,?)', (id_, comment))
 
         return {
             'id': id_,

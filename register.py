@@ -19,12 +19,11 @@ def main():
     path = os.path.abspath(args.log)
 
     conn = connect_db()
-    cur = conn.cursor()
     try:
-        cur.execute(
-            r'INSERT INTO logs VALUES(?,?,?)',
-            (id_, path, args.comment))
-        conn.commit()
+        with conn:
+            conn.execute(
+                r'INSERT INTO logs VALUES(?,?,?)',
+                (id_, path, args.comment))
     except sqlite3.IntegrityError:
         sys.exit('{:s} is already registered'.format(path))
 
