@@ -24,11 +24,11 @@ def log(id_):
     cur = conn.cursor()
     cur.execute(r'SELECT * FROM logs WHERE id=?', (id_,))
 
-    log = cur.fetchone()
-    if log is None:
+    l = cur.fetchone()
+    if l is None:
         return bottle.HTTPResponse(status=404)
 
-    _, path, comment = log
+    _, path, comment = l
 
     try:
         content = json.load(open(path))
