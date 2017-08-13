@@ -9,18 +9,37 @@ Simple visualizer for Chainer's log.
 ## Usage
 
 1. Start monitor
-```
-$ cd chainer-monitor
-$ ./monitor.py
-```
+    ```
+    $ cd chainer-monitor
+    $ ./monitor.py
+    ```
 
 2. Register a log file.
-```
-$ ./register.py <log file> [--comment <comment>]
-```
-For example,
-```
-$ ./register.py ~/chainer/examples/mnist/result/log --comment mnist
-```
+    ```
+    $ ./register.py <log file> [--comment <comment>]
+    ```
+    For example,
+    ```
+    $ ./register.py ~/chainer/examples/mnist/result/log --comment mnist
+    ```
 
 3. Open http://localhost:8080/ with your web browser.
+
+
+## Advanced usage
+
+### Training on remote server, viewing from local machine.
+
+- @ remote server
+    ```
+    $ ./monitor.py
+    $ ./register.py ~/chainer/examples/mnist/result/log --comment mnist
+    $ cd ~/chainer/examples/mnist/
+    $ python train_mnist.py
+    ```
+
+- @ local machine
+    ```
+    $ ssh remote -L 8080:localhost:8080
+    ```
+    Open http://localhost:8080/
