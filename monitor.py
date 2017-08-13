@@ -86,10 +86,7 @@ class Monitor(bottle.Bottle):
         params = bottle.request.params
 
         id_ = gen_id()
-        if 'comment' in params:
-            comment = params['comment']
-        else:
-            comment = ''
+        comment = getattr(params, 'comment', '')
 
         with self.conn:
             self.conn.execute(r'INSERT INTO plots VALUES(?,?)', (id_, comment))
