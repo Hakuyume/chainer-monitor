@@ -30,7 +30,7 @@ class Monitor(bottle.Bottle):
         self.delete('/api/series/<id_>', callback=self.del_series)
 
         self.route('/<filepath>', callback=self.static)
-        self.route('/root', callback=self.root)
+        self.route('/', callback=self.root)
         self.route('/plots/<id_>', callback=self.plot)
 
     def get_logs(self):
@@ -185,7 +185,7 @@ class Monitor(bottle.Bottle):
 
     def root(self):
         r = bottle.HTTPResponse(status=302)
-        r.set_header('Location', 'logs')
+        r.set_header('Location', 'plots')
         return r
 
 
