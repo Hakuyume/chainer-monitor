@@ -60,9 +60,9 @@ def get_plot(id_):
     _, comment = p
 
     series = {
-        series_id: {'log': log_id, 'color': color}
-        for (series_id, _, log_id, color) in
-        cur.execute(r'SELECT * FROM series WHERE plot_id=?', (id_,))}
+        id_: {'log': log, 'color': color}
+        for (id_, _, log, color) in
+        cur.execute(r'SELECT * FROM series WHERE plot=?', (id_,))}
 
     return {
         'id': id_,

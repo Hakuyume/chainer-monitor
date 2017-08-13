@@ -20,7 +20,7 @@ def connect_db():
         r'(id INTEGER PRIMARY KEY, comment TEXT)')
     cur.execute(
         r'CREATE TABLE IF NOT EXISTS series '
-        r'(id INTEGER PRIMARY KEY, plot_id INTEGER, log_id INTEGER, '
-        r'color INTEGER, UNIQUE(plot_id, log_id))')
+        r'(id INTEGER PRIMARY KEY, plot INTEGER, log INTEGER, '
+        r'color INTEGER, UNIQUE(plot, log))')
 
     return conn
