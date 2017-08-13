@@ -40,6 +40,7 @@ def log(id_):
         for entry in content]
 
     return {
+        'id': id_,
         'path': path,
         'comment': comment,
         'content': content}
