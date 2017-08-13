@@ -41,7 +41,7 @@
                   var tr = $('<tr></tr>').appendTo(tbody);
                   $('<td></td>').appendTo(tr).append(
                       $('<a></a>')
-                          .text(plot.comment)
+                          .text((plot.comment != '') ? plot.comment : '<no comment>')
                           .attr('href', '/plots/' + id));
                   $('<td></td>').appendTo(tr).append(
                       $('<button></button>')
