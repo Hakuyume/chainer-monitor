@@ -82,13 +82,14 @@ def new_plot():
     else:
         comment = ''
 
-    cur.execute(r'INSERT INTO plots VALUES(?,?)', (id_, ''))
+    cur.execute(r'INSERT INTO plots VALUES(?,?)', (id_, comment))
     conn.commit()
 
     return {
         'id': id_,
         'comment': comment,
         'series': dict()}
+
 
 @bottle.get('/<filepath>')
 def static(filepath):
