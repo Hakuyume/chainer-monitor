@@ -9,23 +9,13 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.min.js"></script>
     <script>
-      function get_params() {
-          var params = {};
-          var tokens = location.search.slice(1).split('&')
-          $.each(tokens, function(i, e) {
-              var e = e.split('=');
-              params[e[0]] = e[1];
-          });
-          return params;
-      }
-
       var log = {};
 
       function fetch() {
-          var params = get_params();
-          id = params.id;
+          var tokens = location.pathname.split('/');
+          var id = tokens[tokens.length - 1];
 
-          $.getJSON('api/logs/' + id, function(r) {
+          $.getJSON('/api/logs/' + id, function(r) {
               log = r;
               update();
           });

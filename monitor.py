@@ -45,6 +45,13 @@ def log_by_id(id_):
         'content': content}
 
 
+@bottle.get('/plots/<id_>')
+def plot_by_id(id_):
+    return bottle.static_file(
+        'plot.html',
+        root=os.path.join(os.path.dirname(__file__), 'static'))
+
+
 @bottle.get('/<filepath>')
 def static(filepath):
     return bottle.static_file(

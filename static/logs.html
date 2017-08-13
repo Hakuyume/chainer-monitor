@@ -9,13 +9,13 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script>
       $(document).ready(function() {
-          $.getJSON('api/logs', function(logs) {
+          $.getJSON('/api/logs', function(logs) {
               tbody = $('#logs > tbody');
               tbody.empty();
               $.each(logs, function(id, log) {
                   var tr = $('<tr></tr>').appendTo(tbody);
                   $('<td></td>').appendTo(tr).append(
-                      $('<a></a>').text(log.path).attr('href', 'plot?id=' + id));
+                      $('<a></a>').text(log.path).attr('href', 'plots/' + id));
                   $('<td></td>').appendTo(tr).text(log.comment);
               });
           });
