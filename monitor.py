@@ -19,6 +19,7 @@ class Monitor(bottle.Bottle):
 
         self.get('/api/logs', callback=self.get_logs)
         self.get('/api/logs/<id_>', callback=self.get_log)
+        self.delete('/api/logs/<id_>', callback=self.del_log)
 
         self.post('/api/plots', callback=self.new_plot)
         self.get('/api/plots/<id_>', callback=self.get_plot)
@@ -58,6 +59,20 @@ class Monitor(bottle.Bottle):
             'path': path,
             'comment': comment,
             'content': content}
+
+    def del_log(self, id_):
+        with self.conn:
+            cur = self.conn.cursor()
+            cur.execute(r'SELECT * FROM logs WHERE id=?', (id_,))
+
+            l = cur.fetchone()
+            if l is None:
+                return bottle.HTTPResponse(status=404)
+
+            cur.execute(r'DELETE FROM logs WHERE id=?', (id_,))
+            cur.execute(r'DELETE FROM series WHERE log=?', (id_,))
+
+        return {'id': id_}
 
     def new_plot(self):
         params = self.request.params

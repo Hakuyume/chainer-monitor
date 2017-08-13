@@ -8,17 +8,37 @@
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script>
-      $(document).ready(function() {
+      function delete_(id) {
+          $.ajax({
+              url: '/api/logs/' + id,
+              type: 'DELETE',
+              success: update
+          });
+      }
+
+      function update() {
           $.getJSON('/api/logs', function(logs) {
               tbody = $('#logs > tbody');
               tbody.empty();
               $.each(logs, function(id, log) {
                   var tr = $('<tr></tr>').appendTo(tbody);
                   $('<td></td>').appendTo(tr).append(
-                      $('<a></a>').text(log.path).attr('href', 'plots/' + id));
+                      $('<a></a>')
+                          .text(log.path)
+                          .attr('href', 'plots/' + id));
                   $('<td></td>').appendTo(tr).text(log.comment);
+                  $('<td></td>').appendTo(tr).append(
+                      $('<button></button>')
+                          .text('delete')
+                          .attr('type', 'button')
+                          .attr('class', 'btn btn-danger')
+                          .attr('onclick', 'delete_(' + id + ')'));
               });
           });
+      }
+
+      $(document).ready(function() {
+          update();
       });
     </script>
   </head>
@@ -26,7 +46,7 @@
     <div class="container">
       <table class="table table-bordered table-hover" id="logs">
         <thead>
-          <tr><th>path</th><th>comment</th></tr>
+          <tr><th>path</th><th>comment</th><th></th></tr>
         </thead>
         <tbody></tbody>
       </table>
