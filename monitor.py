@@ -3,6 +3,7 @@
 import argparse
 import bottle
 import json
+import math
 import os
 
 from common import connect_db
@@ -33,6 +34,10 @@ def log_by_id(id_):
         content = json.load(open(path))
     except FileNotFoundError:
         content = list()
+
+    content = [
+        {k: (v if math.isfinite(v) else None) for k, v in entry.items()}
+        for entry in content]
 
     return {
         'path': path,
