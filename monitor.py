@@ -28,11 +28,16 @@ def log_by_id(id_):
         return bottle.HTTPResponse(status=404)
 
     _, path, comment = log
+
+    try:
+        content = json.load(open(path))
+    except FileNotFoundError:
+        content = dict()
+
     return {
         'path': path,
         'comment': comment,
-        'content': json.load(open(path)),
-        'mtime': os.stat(path).st_mtime}
+        'content': content}
 
 
 @bottle.get('/<filepath>')
