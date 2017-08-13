@@ -20,7 +20,7 @@ def logs():
 
 
 @bottle.get('/api/logs/<id_>')
-def log_by_id(id_):
+def log(id_):
     cur = conn.cursor()
     cur.execute(r'SELECT * FROM logs WHERE id=?', (id_,))
 
@@ -45,13 +45,6 @@ def log_by_id(id_):
         'content': content}
 
 
-@bottle.get('/plots/<id_>')
-def plot_by_id(id_):
-    return bottle.static_file(
-        'plot.html',
-        root=os.path.join(os.path.dirname(__file__), 'static'))
-
-
 @bottle.get('/<filepath>')
 def static(filepath):
     return bottle.static_file(
@@ -59,8 +52,15 @@ def static(filepath):
         root=os.path.join(os.path.dirname(__file__), 'static'))
 
 
+@bottle.get('/plots/<id_>')
+def static_plot(id_):
+    return bottle.static_file(
+        'plot.html',
+        root=os.path.join(os.path.dirname(__file__), 'static'))
+
+
 @bottle.get('/')
-def redirect():
+def root():
     r = bottle.HTTPResponse(status=302)
     r.set_header('Location', 'logs')
     return r
