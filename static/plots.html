@@ -3,30 +3,41 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Logs</title>
+    <title>Plots</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script>
+      function create() {
+          var comment = $('#comment');
+          $.post(
+              '/api/plots',
+              $.param({'comment': comment.val()}),
+              function() {
+                  update();
+                  comment.val('');
+              }
+          );
+      }
+
       function delete_(id) {
           $.ajax({
-              url: '/api/logs/' + id,
+              url: '/api/plots/' + id,
               type: 'DELETE',
               success: update
           });
       }
 
       function update() {
-          $.getJSON('/api/logs', function(logs) {
+          $.getJSON('/api/plots', function(plots) {
               tbody = $('#logs > tbody');
               tbody.empty();
-              $.each(logs, function(id, log) {
+              $.each(plots, function(id, plot) {
                   var tr = $('<tr></tr>').appendTo(tbody);
                   $('<td></td>').appendTo(tr).append(
                       $('<a></a>')
-                          .text(log.path)
-                          .attr('href', 'plots/' + id));
-                  $('<td></td>').appendTo(tr).text(log.comment);
+                          .text(plot.comment)
+                          .attr('href', '/plots/' + id));
                   $('<td></td>').appendTo(tr).append(
                       $('<button></button>')
                           .text('Delete')
@@ -46,10 +57,12 @@
     <div class="container">
       <table class="table table-bordered table-hover" id="logs">
         <thead>
-          <tr><th>path</th><th>comment</th><th></th></tr>
+          <tr><th>comment</th><th></th></tr>
         </thead>
         <tbody></tbody>
       </table>
+      <input id="comment" type="text" placeholder="comment">
+      <button type="button" class="btn btn-success" onclick="create()">Create</button>
     </div>
   </body>
 </html>

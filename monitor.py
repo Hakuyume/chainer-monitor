@@ -21,8 +21,10 @@ class Monitor(bottle.Bottle):
         self.get('/api/logs/<id_>', callback=self.get_log)
         self.delete('/api/logs/<id_>', callback=self.del_log)
 
+        self.get('/api/plots', callback=self.get_plots)
         self.post('/api/plots', callback=self.new_plot)
         self.get('/api/plots/<id_>', callback=self.get_plot)
+        self.delete('/api/plots/<id_>', callback=self.del_plot)
 
         self.route('/<filepath>', callback=self.static)
         self.route('/root', callback=self.root)
@@ -74,8 +76,14 @@ class Monitor(bottle.Bottle):
 
         return {'id': id_}
 
+    def get_plots(self):
+        cur = self.conn.cursor()
+        return {
+            id_: {'comment': comment}
+            for (id_, comment) in cur.execute(r'SELECT * FROM plots')}
+
     def new_plot(self):
-        params = self.request.params
+        params = bottle.request.params
 
         id_ = gen_id()
         if 'comment' in params:
@@ -110,6 +118,20 @@ class Monitor(bottle.Bottle):
             'id': id_,
             'comment': comment,
             'series': series}
+
+    def del_plot(self, id_):
+        with self.conn:
+            cur = self.conn.cursor()
+            cur.execute(r'SELECT * FROM plots WHERE id=?', (id_,))
+
+            l = cur.fetchone()
+            if l is None:
+                return bottle.HTTPResponse(status=404)
+
+            cur.execute(r'DELETE FROM plots WHERE id=?', (id_,))
+            cur.execute(r'DELETE FROM series WHERE plot=?', (id_,))
+
+        return {'id': id_}
 
     def static(self, filepath):
         return bottle.static_file(
