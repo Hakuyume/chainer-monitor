@@ -32,7 +32,7 @@ def log_by_id(id_):
     try:
         content = json.load(open(path))
     except FileNotFoundError:
-        content = dict()
+        content = list()
 
     return {
         'path': path,
