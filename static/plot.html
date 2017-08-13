@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Plot</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.min.js"></script>
+    <script>
+      function get_params() {
+          var params = {};
+          var tokens = location.search.slice(1).split('&')
+          $.each(tokens, function(i, e) {
+              var e = e.split('=');
+              params[e[0]] = e[1];
+          });
+          return params;
+      }
+
+      var log = {};
+
+      function fetch() {
+          var params = get_params();
+          id = params.id;
+
+          $.getJSON('api/logs/' + id, function(r) {
+              log = r;
+              update();
+          });
+
+          setTimeout(fetch, 5000);
+      }
+
+      function update() {
+          var xunit = 'iteration';
+          if ($('#use_epoch').is(':checked')) {
+              xunit = 'epoch';
+          }
+
+          var yscale = 'linear';
+          if ($('#use_logscale').is(':checked')) {
+              yscale = 'logarithmic';
+          }
+
+          var data = $.map(log.content, function(e) {
+              return {x: e[xunit], y: e['main/loss']};
+          });
+
+          var xmin = log.content[0][xunit];
+          var xmax = log.content[log.content.length - 1][xunit];
+
+          var chart = new Chart($('#plot'), {
+              type: 'line',
+              data: {
+                  datasets: [{
+                      label: 'main/loss',
+                      data: data,
+                      borderColor: 'red',
+                      pointDot: false,
+                      backgroundColor: 'rgba(0,0,0,0)'
+                  }]
+              },
+              options: {
+                  elements: {
+                      point: {radius: 0},
+                      line: {tension: 0},
+                  },
+                  scales: {
+                      xAxes: [{
+                          type: 'linear',
+                          position: 'bottom',
+                          ticks: {min: xmin, max: xmax}
+                      }],
+                      yAxes: [{type: yscale}]
+                  },
+                  legend: {position: 'bottom'}
+              }
+          });
+      }
+
+      $(document).ready(function() {
+          fetch();
+      });
+    </script>
+  </head>
+  <body>
+    </script>
+  </head>
+  <body>
+    <div class="container col-md-9">
+      <canvas id="plot"></canvas>
+    </div>
+    <aside class="col-md-3 sidebar-nav-fixed pull-right">
+      <ul class="nav well">
+        <li><input id="use_epoch" type="checkbox" onChange="update()"> use epoch</li>
+        <li><input id="use_logscale" type="checkbox" onChange="update()"> use log scale</li>
+      </ul>
+    </aside>
+  </body>
+</html>

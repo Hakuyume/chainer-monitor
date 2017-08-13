@@ -1,0 +1,51 @@
+#! /usr/bin/env python3
+
+import bottle
+import json
+import os
+
+from common import connect_db
+
+conn = connect_db()
+
+
+@bottle.get('/api/logs')
+def logs():
+    cur = conn.cursor()
+    return {
+        id_: {'path': path, 'comment': comment}
+        for (id_, path, comment) in cur.execute(r'SELECT * FROM logs')}
+
+
+@bottle.get('/api/logs/<id_>')
+def log_by_id(id_):
+    cur = conn.cursor()
+    cur.execute(r'SELECT * FROM logs WHERE id=?', (id_,))
+
+    log = cur.fetchone()
+    if log is None:
+        return bottle.HTTPResponse(status=404)
+
+    _, path, comment = log
+    return {
+        'path': path,
+        'comment': comment,
+        'content': json.load(open(path)),
+        'mtime': os.stat(path).st_mtime}
+
+
+@bottle.get('/<filepath>')
+def static(filepath):
+    return bottle.static_file(
+        filepath + '.html',
+        root=os.path.join(os.path.dirname(__file__), 'static'))
+
+
+@bottle.get('/')
+def redirect():
+    r = bottle.HTTPResponse(status=302)
+    r.set_header('Location', 'logs')
+    return r
+
+
+bottle.run()
