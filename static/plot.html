@@ -14,19 +14,40 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.min.js"></script>
     <script>
-      var colors = ['red', 'blue', 'green', 'black'];
-
       var tokens = location.pathname.split('/');
       var id = tokens[tokens.length - 1];
 
       var plot = {};
       var series_logs = {};
 
+      function int2rgb(c) {
+          return 'rgb('
+               + ((c >> 16) & 0xff) + ','
+               + ((c >> 8) & 0xff) + ','
+               + ((c >> 0) & 0xff) + ')';
+      }
+
+      function hex2int(c) {
+          if (c[0] == '#') {
+              c = c.slice(1);
+          }
+          return parseInt(c, 16);
+      }
+
+      function int2hex(c) {
+          return '#' + parseInt(c).toString(16);
+      }
+
       function add() {
           var log_select = $('#log-select');
+          var color_select = $('#color-select');
           $.post(
               '/api/series',
-              $.param({'plot': id, 'log': log_select.val()}),
+              $.param({
+                  'plot': id,
+                  'log': log_select.val(),
+                  'color': hex2int(color_select.val()),
+              }),
               fetch
           );
       }
@@ -100,7 +121,7 @@
               return {
                   label: log.comment,
                   data: data,
-                  borderColor: colors[s.color],
+                  borderColor: int2rgb(s.color),
                   pointDot: false,
                   backgroundColor: 'rgba(0,0,0,0)'
               };
@@ -155,7 +176,13 @@
                                   .attr('class', 'clearfix')))
                   .append(
                       $('<div></div>')
-                          .attr('class', 'panel-body'))
+                          .attr('class', 'panel-body')
+                          .append(
+                              $('<input></input>')
+                                  .attr('type', 'color')
+                                  .attr('disabled', 'disabled')
+                                  .attr('class', 'form-control')
+                                  .attr('value', int2hex(s.color))))
           });
       }
 
@@ -217,6 +244,7 @@
           <div class="modal-body">
             <select id="log-select" class="form-control">
             </select>
+            <input id="color-select" type="color" class="form-control">
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Discard</button>
