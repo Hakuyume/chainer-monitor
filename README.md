@@ -4,7 +4,7 @@ Simple visualizer for Chainer's log.
 
 ## Requirements
 - Python 3
-- bottle
+- bottle (avaiable via pip)
 
 ## Usage
 
