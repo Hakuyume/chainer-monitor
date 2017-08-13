@@ -26,6 +26,9 @@ class Monitor(bottle.Bottle):
         self.get('/api/plots/<id_>', callback=self.get_plot)
         self.delete('/api/plots/<id_>', callback=self.del_plot)
 
+        self.post('/api/series', callback=self.new_series)
+        self.delete('/api/series/<id_>', callback=self.del_series)
+
         self.route('/<filepath>', callback=self.static)
         self.route('/root', callback=self.root)
         self.route('/plots/<id_>', callback=self.plot)
@@ -38,8 +41,8 @@ class Monitor(bottle.Bottle):
 
     def get_log(self, id_):
         cur = self.conn.cursor()
-        cur.execute(r'SELECT * FROM logs WHERE id=?', (id_,))
 
+        cur.execute(r'SELECT * FROM logs WHERE id=?', (id_,))
         l = cur.fetchone()
         if l is None:
             return bottle.HTTPResponse(status=404)
@@ -65,8 +68,8 @@ class Monitor(bottle.Bottle):
     def del_log(self, id_):
         with self.conn:
             cur = self.conn.cursor()
-            cur.execute(r'SELECT * FROM logs WHERE id=?', (id_,))
 
+            cur.execute(r'SELECT * FROM logs WHERE id=?', (id_,))
             l = cur.fetchone()
             if l is None:
                 return bottle.HTTPResponse(status=404)
@@ -86,7 +89,7 @@ class Monitor(bottle.Bottle):
         params = bottle.request.params
 
         id_ = gen_id()
-        comment = getattr(params, 'comment', '')
+        comment = params.comment
 
         with self.conn:
             self.conn.execute(r'INSERT INTO plots VALUES(?,?)', (id_, comment))
@@ -119,14 +122,56 @@ class Monitor(bottle.Bottle):
     def del_plot(self, id_):
         with self.conn:
             cur = self.conn.cursor()
-            cur.execute(r'SELECT * FROM plots WHERE id=?', (id_,))
 
-            l = cur.fetchone()
-            if l is None:
+            cur.execute(r'SELECT * FROM plots WHERE id=?', (id_,))
+            if cur.fetchone() is None:
                 return bottle.HTTPResponse(status=404)
 
             cur.execute(r'DELETE FROM plots WHERE id=?', (id_,))
             cur.execute(r'DELETE FROM series WHERE plot=?', (id_,))
+
+        return {'id': id_}
+
+    def new_series(self):
+        params = bottle.request.params
+
+        id_ = gen_id()
+        plot = params.plot
+        log = params.log
+
+        color = params.color
+        if color == '':
+            color = 0
+
+        with self.conn:
+            cur = self.conn.cursor()
+
+            cur.execute(r'SELECT * FROM plots WHERE id=?', (plot,))
+            if cur.fetchone() is None:
+                return bottle.HTTPResponse(status=404)
+
+            cur.execute(r'SELECT * FROM logs WHERE id=?', (log,))
+            if cur.fetchone() is None:
+                return bottle.HTTPResponse(status=404)
+
+            cur.execute(
+                r'INSERT INTO series VALUES(?,?,?,?)', (id_, plot, log, color))
+
+        return {
+            'id': id_,
+            'plot': plot,
+            'log': log,
+            'color': color}
+
+    def del_series(self, id_):
+        with self.conn:
+            cur = self.conn.cursor()
+
+            cur.execute(r'SELECT * FROM series WHERE id=?', (id_,))
+            if cur.fetchone() is None:
+                return bottle.HTTPResponse(status=404)
+
+            cur.execute(r'DELETE FROM series WHERE id=?', (id_,))
 
         return {'id': id_}
 

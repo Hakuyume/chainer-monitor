@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Plots</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <style>
+      body {
+          padding-top: 70px;
+      }
+    </style>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script>
@@ -61,8 +66,8 @@
         </thead>
         <tbody></tbody>
       </table>
-      <input id="comment" type="text" placeholder="comment">
-      <button type="button" class="btn btn-success" onclick="create()">Create</button>
+      <input id="comment" class="form-control" type="text" placeholder="comment">
+      <button type="button" class="btn btn-primary" onclick="create()">Create</button>
     </div>
   </body>
 </html>
