@@ -7,12 +7,14 @@ import math
 import os
 
 from common import connect_db
+from common import gen_id
+
 
 conn = connect_db()
 
 
 @bottle.get('/api/logs')
-def logs():
+def get_logs():
     cur = conn.cursor()
     return {
         id_: {'path': path, 'comment': comment}
@@ -20,7 +22,7 @@ def logs():
 
 
 @bottle.get('/api/logs/<id_>')
-def log(id_):
+def get_log(id_):
     cur = conn.cursor()
     cur.execute(r'SELECT * FROM logs WHERE id=?', (id_,))
 
@@ -45,6 +47,48 @@ def log(id_):
         'comment': comment,
         'content': content}
 
+
+@bottle.get('/api/plots/<id_>')
+def get_plot(id_):
+    cur = conn.cursor()
+    cur.execute(r'SELECT * FROM plots WHERE id=?', (id_,))
+
+    p = cur.fetchone()
+    if p is None:
+        return bottle.HTTPResponse(status=404)
+
+    _, comment = p
+
+    series = {
+        series_id: {'log': log_id, 'color': color}
+        for (series_id, _, log_id, color) in
+        cur.execute(r'SELECT * FROM series WHERE plot_id=?', (id_,))}
+
+    return {
+        'id': id_,
+        'comment': comment,
+        'series': series}
+
+
+@bottle.post('/api/plots')
+def new_plot():
+    cur = conn.cursor()
+
+    params = bottle.request.params
+
+    id_ = gen_id()
+    if 'comment' in params:
+        comment = params['comment']
+    else:
+        comment = ''
+
+    cur.execute(r'INSERT INTO plots VALUES(?,?)', (id_, ''))
+    conn.commit()
+
+    return {
+        'id': id_,
+        'comment': comment,
+        'series': dict()}
 
 @bottle.get('/<filepath>')
 def static(filepath):

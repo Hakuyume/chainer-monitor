@@ -15,5 +15,12 @@ def connect_db():
     cur.execute(
         r'CREATE TABLE IF NOT EXISTS logs '
         r'(id INTEGER PRIMARY KEY, path TEXT UNIQUE, comment TEXT)')
+    cur.execute(
+        r'CREATE TABLE IF NOT EXISTS plots '
+        r'(id INTEGER PRIMARY KEY, comment TEXT)')
+    cur.execute(
+        r'CREATE TABLE IF NOT EXISTS series '
+        r'(id INTEGER PRIMARY KEY, plot_id INTEGER, log_id INTEGER, '
+        r'color INTEGER, UNIQUE(plot_id, log_id))')
 
     return conn
