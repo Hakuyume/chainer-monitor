@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Monitor</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <style>
+      body {
+          padding-top: 70px;
+      }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script>
+      function create_plot() {
+          var comment = $('#comment');
+          $.post(
+              '/api/plots',
+              $.param({'comment': comment.val()}),
+              function() {
+                  update_plots();
+                  comment.val('');
+              }
+          );
+      }
+
+      function delete_plot(id) {
+          $.ajax({
+              url: '/api/plots/' + id,
+              type: 'DELETE',
+              success: update_plots
+          });
+      }
+
+      function update_plots() {
+          $.getJSON('/api/plots', function(plots) {
+              tbody = $('#plots > tbody');
+              tbody.empty();
+              $.each(plots, function(id, plot) {
+                  var tr = $('<tr></tr>').appendTo(tbody);
+                  $('<td></td>').appendTo(tr).append(
+                      $('<a></a>')
+                          .text(plot.comment)
+                          .attr('href', '/plots/' + id));
+                  $('<td></td>').appendTo(tr).append(
+                      $('<button></button>')
+                          .text('Delete')
+                          .attr('type', 'button')
+                          .attr('class', 'btn btn-danger')
+                          .attr('onclick', 'delete_plot(' + id + ')'));
+              });
+          });
+      }
+
+      function delete_log(id) {
+          $.ajax({
+              url: '/api/logs/' + id,
+              type: 'DELETE',
+              success: update_logs
+          });
+      }
+
+      function update_logs() {
+          $.getJSON('/api/logs', function(logs) {
+              tbody = $('#logs > tbody');
+              tbody.empty();
+              $.each(logs, function(id, log) {
+                  var tr = $('<tr></tr>').appendTo(tbody);
+                  $('<td></td>').appendTo(tr).text(log.path);
+                  $('<td></td>').appendTo(tr).text(log.comment);
+                  $('<td></td>').appendTo(tr).append(
+                      $('<button></button>')
+                          .text('Delete')
+                          .attr('type', 'button')
+                          .attr('class', 'btn btn-danger')
+                          .attr('onclick', 'delete_log(' + id + ')'));
+              });
+          });
+      }
+
+      $(document).ready(function() {
+          update_plots();
+          update_logs();
+      });
+    </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">Monitor</a>
+        </div>
+        <div class="collapse navbar-collapse" id="navbar">
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h2 class="panel-title pull-left">Plot</h2>
+          <button type="button" class="btn btn-primary btm-sm pull-right" onclick="create_plot()">Create</button>
+          <input id="comment" class="pull-right" type="text" placeholder="comment">
+          <div class="clearfix"></div>
+        </div>
+        <table class="panel-body table table-bordered table-hover" id="plots">
+          <thead>
+            <tr><th>comment</th><th class="col-md-1"></th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h2 class="panel-title">Log</h2>
+        </div>
+        <table class="panel-body table table-bordered table-hover" id="logs">
+          <thead>
+            <tr><th>path</th><th>comment</th><th class="col-md-1"></th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>

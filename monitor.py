@@ -29,7 +29,6 @@ class Monitor(bottle.Bottle):
         self.post('/api/series', callback=self.new_series)
         self.delete('/api/series/<id_>', callback=self.del_series)
 
-        self.route('/<filepath>', callback=self.static)
         self.route('/', callback=self.root)
         self.route('/plots/<id_>', callback=self.plot)
 
@@ -175,18 +174,16 @@ class Monitor(bottle.Bottle):
 
         return {'id': id_}
 
-    def static(self, filepath):
+    def static(self, path):
         return bottle.static_file(
-            filepath + '.html',
+            path + '.html',
             root=os.path.join(os.path.dirname(__file__), 'static'))
+
+    def root(self):
+        return self.static('index')
 
     def plot(self, id_):
         return self.static('plot')
-
-    def root(self):
-        r = bottle.HTTPResponse(status=302)
-        r.set_header('Location', 'plots')
-        return r
 
 
 def main():
