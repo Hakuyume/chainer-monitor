@@ -156,9 +156,19 @@
               }
 
               xmax = Math.max(xmax, log.content[log.content.length - 1][xunit]);
-              var data = $.map(log.content, function(l) {
-                  return {x: l[xunit], y: l['main/loss']};
-              });
+
+              var interval = 1;
+
+              var point_limit = $('input[name=point-limit]:checked').val();
+              if (point_limit != '' && log.content.length > point_limit) {
+                  interval = log.content.length / point_limit;
+              }
+
+              var data = [];
+              for (var i = 0; i < log.content.length; i += interval) {
+                  var l = log.content[Math.floor(i)];
+                  data.push({x: l[xunit], y: l['main/loss']});
+              }
 
               return {
                   label: s.log.comment,
@@ -258,6 +268,12 @@
           <ul class="list-unstyled">
             <li><input id="use_epoch" type="checkbox" onchange="refresh_plot()"> use epoch</li>
             <li><input id="use_logscale" type="checkbox" onchange="refresh_plot()"> use log scale</li>
+            <li>
+              # points:
+              <input type="radio" name="point-limit" value="256" onchange="refresh_plot()" checked> 256
+              <input type="radio" name="point-limit" value="1024" onchange="refresh_plot()"> 1024
+              <input type="radio" name="point-limit" value="" onchange="refresh_plot()"> No limit
+            </li>
           </ul>
         </div>
       </div>
