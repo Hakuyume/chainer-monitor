@@ -45,6 +45,7 @@
           var log_select = $('#log-select');
           var key_select = $('#key-select');
           var color_select = $('#color-select');
+          var yaxis_select = $('input[name=yaxis-select]:checked');
           $.post(
               '/api/series',
               $.param({
@@ -52,6 +53,7 @@
                   'log': log_select.val(),
                   'key': key_select.val(),
                   'color': hex2int(color_select.val()),
+                  'yaxis': yaxis_select.val()
               }),
               fetch_plot
           );
@@ -98,41 +100,48 @@
       }
 
       function refresh_series() {
-          var tbody = $('#series > tbody');
-          tbody.empty();
-          $.each(plot.series, function(id, s) {
-              var tr = $('<tr></tr>').appendTo(tbody);
-              $('<td></td>').appendTo(tr).append(
-                  $('<input></input>')
-                      .attr('id', 'color-select-' + id)
-                      .attr('type', 'color')
-                      .attr('class', 'form-control')
-                      .attr('value', int2hex(s.color))
-                      .attr('onchange', 'update_series(' + id + ')'));
-              $('<td></td>').appendTo(tr).text(s.log.comment + ': ' + s.key);
-              $('<td></td>').appendTo(tr).append(
-                  $('<button></button>')
-                      .text('Delete')
-                      .attr('type', 'button')
-                      .attr('class', 'btn btn-danger btn-sm pull-right')
-                      .attr('onclick', 'del_series(' + id + ')'));
-          });
+          for (var yaxis = 0; yaxis < 2; yaxis++) {
+              var tbody = $('#series-' + yaxis + ' > tbody');
+              tbody.empty();
+              $.each(plot.series, function(id, s) {
+                  if (s.yaxis != yaxis) {
+                      return;
+                  }
+                  var tr = $('<tr></tr>').appendTo(tbody);
+                  $('<td></td>').appendTo(tr).append(
+                      $('<input></input>')
+                          .attr('id', 'color-select-' + id)
+                          .attr('type', 'color')
+                          .attr('class', 'form-control')
+                          .attr('value', int2hex(s.color))
+                          .attr('onchange', 'update_series(' + id + ')'));
+                  $('<td></td>').appendTo(tr).text(s.log.comment + ': ' + s.key);
+                  $('<td></td>').appendTo(tr).append(
+                      $('<button></button>')
+                          .text('Delete')
+                          .attr('type', 'button')
+                          .attr('class', 'btn btn-danger btn-sm pull-right')
+                          .attr('onclick', 'del_series(' + id + ')'));
+              });
+          }
       }
 
       var chart = null;
 
       function refresh_plot() {
           var xunit = 'iteration';
-          if ($('#use_epoch').is(':checked')) {
+          if ($('#use-epoch').is(':checked')) {
               xunit = 'epoch';
           }
 
-          var yscale = 'linear';
-          if ($('#use_logscale').is(':checked')) {
-              yscale = 'logarithmic';
-          }
-          if (chart && chart.options.scales.yAxes[0].type != yscale) {
-              chart = null;
+          var yscales = ['linear', 'linear'];
+          for (var yaxis = 0; yaxis < yscales.length; yaxis++) {
+              if ($('#use-logscale-' + yaxis).is(':checked')) {
+                  yscales[yaxis] = 'logarithmic';
+              }
+              if (chart && chart.options.scales.yAxes[yaxis].type != yscales[yaxis]) {
+                  chart = null;
+              }
           }
 
           var xmin = 0;
@@ -167,6 +176,7 @@
                   label: s.log.comment,
                   data: data,
                   borderColor: int2rgb(s.color),
+                  yAxisID: s.yaxis,
                   pointDot: false,
                   fill: false
               };
@@ -183,7 +193,10 @@
                       },
                       scales: {
                           xAxes: [{type: 'linear', position: 'bottom'}],
-                          yAxes: [{type: yscale}]
+                          yAxes: [
+                              {id: 0, type: yscales[0], position: 'left'},
+                              {id: 1, type: yscales[1], position: 'right',
+                               gridLines: {drawOnChartArea: false}}]
                       },
                       legend: {display: false},
                       animation: false
@@ -197,7 +210,7 @@
           chart.update();
       }
 
-      function refresh_dialog(mode) {
+      function refresh_dialog(mode, yaxis) {
           var log_select = $('#log-select');
           var key_select = $('#key-select');
           var color_select = $('#color-select');
@@ -264,6 +277,10 @@
               color_select.val(int2hex(color));
           }
 
+          if (mode == 'open'){
+              $('input[name=yaxis-select]').val([yaxis]);
+          }
+
           if (mode == 'open' || mode == 'log') {
               if (log_select.val()) {
                   add_button.prop('disabled', false);
@@ -299,11 +316,10 @@
     </div>
     <aside class="col-md-3 sidebar-nav-fixed pull-right">
       <div class="panel panel-default">
-        <div class="panel-heading"><h3 class="panel-title">Setting</h3></div>
+        <div class="panel-heading"><h3 class="panel-title">XAxis</h3></div>
         <div class="panel-body">
           <ul class="list-unstyled">
-            <li><input id="use_epoch" type="checkbox" onchange="refresh_plot()"> use epoch</li>
-            <li><input id="use_logscale" type="checkbox" onchange="refresh_plot()"> use log scale</li>
+            <li><input id="use-epoch" type="checkbox" onchange="refresh_plot()"> use epoch</li>
             <li>
               # points:
               <input type="radio" name="point-limit" value="256" onchange="refresh_plot()" checked> 256
@@ -315,13 +331,38 @@
       </div>
       <div class="panel panel-default">
         <div class="panel-heading">
-          <h3 class="panel-title pull-left">Series</h3>
-          <button
-              class="btn btn-primary btn-sm pull-right" data-toggle="modal"
-              data-target="#add-series" onclick="refresh_dialog('open')">Add</button>
+          <h3 class="panel-title pull-left">YAxis: Left</h3>
+          <div class="btn-group pull-right" data-toggle="buttons">
+            <label class="btn btn-default btn-sm">
+              <input id="use-logscale-0" type="checkbox"
+                     onchange="refresh_plot()" autocomplete="off">Logscale
+            </label>
+            <button
+                class="btn btn-primary btn-sm" data-toggle="modal"
+                data-target="#add-series" onclick="refresh_dialog('open', 0)">Add</button>
+          </div>
           <div class="clearfix"></div>
         </div>
-        <table id="series" class="panel-body table table-bordered">
+        <table id="series-0" class="panel-body table table-bordered">
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title pull-left">YAxis: Right</h3>
+          <div class="btn-group pull-right" data-toggle="buttons">
+            <label class="btn btn-default btn-sm">
+              <input id="use-logscale-1" type="checkbox"
+                     onchange="refresh_plot()" autocomplete="off">Logscale
+            </label>
+            <button
+                class="btn btn-primary btn-sm" data-toggle="modal"
+                data-target="#add-series" onclick="refresh_dialog('open', 1)">Add</button>
+          </div>
+          <div class="clearfix"></div>
+        </div>
+        <table id="series-1" class="panel-body table table-bordered">
           <tbody></tbody>
         </table>
       </div>
@@ -340,6 +381,8 @@
             <select id="log-select" class="form-control" onchange="refresh_dialog('log')"></select>
             <select id="key-select" class="form-control"></select>
             <input id="color-select" type="color" class="form-control">
+            <input type="radio" name="yaxis-select" value="0" autocomplete="off"> Left
+            <input type="radio" name="yaxis-select" value="1" autocomplete="off"> Right
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

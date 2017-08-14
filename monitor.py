@@ -115,11 +115,12 @@ class Monitor(bottle.Bottle):
             id_: {
                 'log': {'id': log, 'comment': log_comment},
                 'key': key,
-                'color': color}
-            for (id_, log, key, color, log_comment) in
+                'color': color,
+                'yaxis': yaxis}
+            for (id_, log, key, color, yaxis, log_comment) in
             cur.execute(
                 r'SELECT series.id, series.log, '
-                r'series.key, series.color, logs.comment '
+                r'series.key, series.color, series.yaxis, logs.comment '
                 r'FROM series INNER JOIN logs ON series.log=logs.id '
                 r'WHERE series.plot=?',
                 (id_,))}
