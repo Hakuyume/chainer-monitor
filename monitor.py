@@ -33,6 +33,7 @@ class Monitor(bottle.Bottle):
 
         self.route('/', callback=self.root)
         self.route('/plots/<id_:int>', callback=self.plot)
+        self.route('/<path:path>', callback=self.static)
 
     def get_logs(self):
         cur = self.conn.cursor()
@@ -242,16 +243,16 @@ class Monitor(bottle.Bottle):
 
         return {'id': id_}
 
-    def static(self, path):
-        return bottle.static_file(
-            path + '.html',
-            root=os.path.join(os.path.dirname(__file__), 'static'))
-
     def root(self):
-        return self.static('index')
+        return self.static('index.html')
 
     def plot(self, id_):
-        return self.static('plot')
+        return self.static('plot.html')
+
+    def static(self, path):
+        return bottle.static_file(
+            path,
+            root=os.path.join(os.path.dirname(__file__), 'static'))
 
 
 def main():
