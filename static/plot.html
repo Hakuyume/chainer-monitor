@@ -181,7 +181,7 @@
                   label: s.log.comment,
                   data: data,
                   borderColor: int2rgb(s.color),
-                  yAxisID: s.yaxis,
+                  yAxisID: 'y' + s.yaxis,
                   pointDot: false,
                   fill: false
               };
@@ -198,8 +198,8 @@
                       scales: {
                           xAxes: [{type: 'linear', position: 'bottom'}],
                           yAxes: [
-                              {id: 0, type: yscales[0], position: 'left'},
-                              {id: 1, type: yscales[1], position: 'right',
+                              {id: 'y0', type: yscales[0], position: 'left'},
+                              {id: 'y1', type: yscales[1], position: 'right',
                                gridLines: {drawOnChartArea: false}}]
                       },
                       legend: {display: false},
