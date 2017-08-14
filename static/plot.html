@@ -98,38 +98,24 @@
       }
 
       function refresh_series() {
-          var series_panel = $('#series');
-          series_panel.empty();
+          var tbody = $('#series > tbody');
+          tbody.empty();
           $.each(plot.series, function(id, s) {
-              $('<div></div>')
-                  .attr('class', 'panel panel-default')
-                  .appendTo(series_panel)
-                  .append(
-                      $('<div></div>')
-                          .attr('class', 'panel-heading')
-                          .append(
-                              $('<h3></h3>')
-                                  .text(s.log.comment + ': ' + s.key)
-                                  .attr('class', 'panel-title pull-left'))
-                          .append(
-                              $('<button></button>')
-                                  .text('Delete')
-                                  .attr('type', 'button')
-                                  .attr('class', 'btn btn-danger btn-sm pull-right')
-                                  .attr('onclick', 'del_series(' + id + ')'))
-                          .append(
-                              $('<div></div>')
-                                  .attr('class', 'clearfix')))
-                  .append(
-                      $('<div></div>')
-                          .attr('class', 'panel-body')
-                          .append(
-                              $('<input></input>')
-                                  .attr('id', 'color-select-' + id)
-                                  .attr('type', 'color')
-                                  .attr('class', 'form-control')
-                                  .attr('value', int2hex(s.color))
-                                  .attr('onchange', 'update_series(' + id + ')')))
+              var tr = $('<tr></tr>').appendTo(tbody);
+              $('<td></td>').appendTo(tr).append(
+                  $('<input></input>')
+                      .attr('id', 'color-select-' + id)
+                      .attr('type', 'color')
+                      .attr('class', 'form-control')
+                      .attr('value', int2hex(s.color))
+                      .attr('onchange', 'update_series(' + id + ')'));
+              $('<td></td>').appendTo(tr).text(s.log.comment + ': ' + s.key);
+              $('<td></td>').appendTo(tr).append(
+                  $('<button></button>')
+                      .text('Delete')
+                      .attr('type', 'button')
+                      .attr('class', 'btn btn-danger btn-sm pull-right')
+                      .attr('onclick', 'del_series(' + id + ')'));
           });
       }
 
@@ -335,8 +321,9 @@
               data-target="#add-series" onclick="refresh_dialog('open')">Add</button>
           <div class="clearfix"></div>
         </div>
-        <div id="series" class="panel-body">
-        </div>
+        <table id="series" class="panel-body table table-bordered">
+          <tbody></tbody>
+        </table>
       </div>
     </aside>
 
