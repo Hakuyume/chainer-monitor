@@ -137,10 +137,7 @@
       var chart = null;
 
       function refresh_plot() {
-          var xunit = 'iteration';
-          if ($('#use-epoch').is(':checked')) {
-              xunit = 'epoch';
-          }
+          var xunit = $('input[name=xunit]:checked').val();
 
           var yscales = ['linear', 'linear'];
           for (var yaxis = 0; yaxis < yscales.length; yaxis++) {
@@ -297,10 +294,22 @@
           }
       }
 
+      var timer;
+      function set_timer() {
+          if ($('#auto-fetch').prop('checked')) {
+              timer = setInterval(
+                  function () {
+                      fetch_logs();
+                      refresh_plot();
+                  }, 5000);
+          } else {
+              clearInterval(timer);
+          }
+      }
+
       $(document).ready(function() {
           fetch_plot();
-          setInterval(fetch_logs, 5000);
-          setInterval(refresh_plot, 5000);
+          set_timer();
       });
     </script>
   </head>
@@ -323,18 +332,23 @@
     </div>
     <aside class="col-md-3 sidebar-nav-fixed pull-right">
       <div class="panel panel-default">
-        <div class="panel-heading"><h3 class="panel-title">XAxis</h3></div>
-        <div class="panel-body">
-          <ul class="list-unstyled">
-            <li><input id="use-epoch" type="checkbox" onchange="refresh_plot()"> use epoch</li>
-            <li>
-              # points:
+        <div class="panel-heading"><h3 class="panel-title">General</h3></div>
+        <table class="panel-body table">
+          <tbody>
+            <tr><td>Unit of X axis:</td><td>
+              <input type="radio" name="xunit" value="iteration" onchange="refresh_plot()" checked> Iteration
+              <input type="radio" name="xunit" value="epoch" onchange="refresh_plot()"> Epoch
+            </td></tr>
+            <tr><td># points:</td><td>
               <input type="radio" name="point-limit" value="256" onchange="refresh_plot()" checked> 256
               <input type="radio" name="point-limit" value="1024" onchange="refresh_plot()"> 1024
               <input type="radio" name="point-limit" value="" onchange="refresh_plot()"> No limit
-            </li>
-          </ul>
-        </div>
+            </td></tr>
+            <tr><td>Auto fetch:</td><td>
+              <input id="auto-fetch" type="checkbox" onchange="set_timer()" autocomplete="off" checked> Enabled
+            </td></tr>
+          </tbody>
+        </table>
       </div>
       <div class="panel panel-default">
         <div class="panel-heading">
