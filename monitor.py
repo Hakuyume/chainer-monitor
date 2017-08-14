@@ -36,17 +36,18 @@ class Monitor(bottle.Bottle):
         cur = self.conn.cursor()
         return {
             id_: {'path': path, 'comment': comment}
-            for (id_, path, comment) in cur.execute(r'SELECT * FROM logs')}
+            for (id_, path, comment) in
+            cur.execute(r'SELECT id, path, comment FROM logs')}
 
     def get_log(self, id_):
         cur = self.conn.cursor()
 
-        cur.execute(r'SELECT * FROM logs WHERE id=?', (id_,))
+        cur.execute(r'SELECT path, comment FROM logs WHERE id=?', (id_,))
         l = cur.fetchone()
         if l is None:
             return bottle.HTTPResponse(status=404)
 
-        _, path, comment = l
+        path, comment = l
 
         try:
             content = json.load(open(path))
@@ -68,9 +69,8 @@ class Monitor(bottle.Bottle):
         with self.conn:
             cur = self.conn.cursor()
 
-            cur.execute(r'SELECT * FROM logs WHERE id=?', (id_,))
-            l = cur.fetchone()
-            if l is None:
+            cur.execute(r'SELECT null FROM logs WHERE id=?', (id_,))
+            if cur.fetchone() is None:
                 return bottle.HTTPResponse(status=404)
 
             cur.execute(r'DELETE FROM logs WHERE id=?', (id_,))
@@ -82,7 +82,8 @@ class Monitor(bottle.Bottle):
         cur = self.conn.cursor()
         return {
             id_: {'comment': comment}
-            for (id_, comment) in cur.execute(r'SELECT * FROM plots')}
+            for (id_, comment) in
+            cur.execute(r'SELECT id, comment FROM plots')}
 
     def new_plot(self):
         params = bottle.request.params
@@ -100,13 +101,13 @@ class Monitor(bottle.Bottle):
 
     def get_plot(self, id_):
         cur = self.conn.cursor()
-        cur.execute(r'SELECT * FROM plots WHERE id=?', (id_,))
+        cur.execute(r'SELECT comment FROM plots WHERE id=?', (id_,))
 
         p = cur.fetchone()
         if p is None:
             return bottle.HTTPResponse(status=404)
 
-        _, comment = p
+        comment, = p
 
         series = {
             id_: {
@@ -128,7 +129,7 @@ class Monitor(bottle.Bottle):
         with self.conn:
             cur = self.conn.cursor()
 
-            cur.execute(r'SELECT * FROM plots WHERE id=?', (id_,))
+            cur.execute(r'SELECT null FROM plots WHERE id=?', (id_,))
             if cur.fetchone() is None:
                 return bottle.HTTPResponse(status=404)
 
@@ -151,11 +152,11 @@ class Monitor(bottle.Bottle):
         with self.conn:
             cur = self.conn.cursor()
 
-            cur.execute(r'SELECT * FROM plots WHERE id=?', (plot,))
+            cur.execute(r'SELECT null FROM plots WHERE id=?', (plot,))
             if cur.fetchone() is None:
                 return bottle.HTTPResponse(status=404)
 
-            cur.execute(r'SELECT * FROM logs WHERE id=?', (log,))
+            cur.execute(r'SELECT null FROM logs WHERE id=?', (log,))
             if cur.fetchone() is None:
                 return bottle.HTTPResponse(status=404)
 
@@ -172,7 +173,7 @@ class Monitor(bottle.Bottle):
         with self.conn:
             cur = self.conn.cursor()
 
-            cur.execute(r'SELECT * FROM series WHERE id=?', (id_,))
+            cur.execute(r'SELECT null FROM series WHERE id=?', (id_,))
             if cur.fetchone() is None:
                 return bottle.HTTPResponse(status=404)
 
