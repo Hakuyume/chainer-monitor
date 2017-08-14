@@ -116,7 +116,7 @@
                           .attr('value', int2hex(s.color))
                           .attr('onchange', 'update_series(' + id + ')'));
                   $('<td></td>').appendTo(tr).text(s.log.comment + ': ' + s.key);
-                  $('<td></td>').appendTo(tr).append(
+                  $('<td></td>').appendTo(tr).attr('class', 'col-md-2').append(
                       $('<button></button>')
                           .text('Delete')
                           .attr('type', 'button')
