@@ -57,7 +57,7 @@
 
       function add_plot() {
           var text = $('#comment');
-          plot = new Plot(null, text.val());
+          var plot = new Plot(null, text.val());
           plots.add(plot, function() {
               update_plots();
               text.val('');

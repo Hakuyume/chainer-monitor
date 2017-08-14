@@ -19,79 +19,14 @@
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.min.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/color.js"></script>
     <script>
-      function int2rgb(c) {
-          return 'rgb('
-               + ((c >> 16) & 0xff) + ','
-               + ((c >> 8) & 0xff) + ','
-               + ((c >> 0) & 0xff) + ')';
-      }
-
-      function hex2int(c) {
-          if (c[0] == '#') {
-              c = c.slice(1);
-          }
-          return parseInt(c, 16);
-      }
-
-      function int2hex(c) {
-          c = parseInt(c).toString(16);
-          return '#' + ('000000' + c).slice(-6);
-      }
-
-      var colors = [0xff0000, 0x00ff00, 0x0000ff, 0x808000, 0x008080, 0x800080];
-
       var tokens = location.pathname.split('/');
       var id = tokens[tokens.length - 1];
+      var plot = new Plot(id);
+      var logs = new Logs();
 
-      var plot = {};
-      var logs = {};
-
-      function new_series() {
-          var log_select = $('#log-select');
-          var key_select = $('#key-select');
-          var color_select = $('#color-select');
-          var yaxis_select = $('input[name=yaxis-select]:checked');
-          $.post(
-              '/api/series',
-              $.param({
-                  'plot': id,
-                  'log': log_select.val(),
-                  'key': key_select.val(),
-                  'color': hex2int(color_select.val()),
-                  'yaxis': yaxis_select.val()
-              }),
-              fetch_plot
-          );
-      }
-
-      function del_series(id) {
-          $.ajax({
-              url: '/api/series/' + id,
-              type: 'DELETE',
-              success: fetch_plot
-          });
-      }
-
-      function update_series(id) {
-          var color_select = $('#color-select-' + id);
-          $.ajax({
-              url: '/api/series/' + id,
-              type: 'PUT',
-              data: $.param({'color': hex2int(color_select.val())}),
-              success: fetch_plot
-          });
-      }
-
-      function fetch_plot() {
-          $.getJSON('/api/plots/' + id, function(p) {
-              plot = p;
-              refresh_series();
-              refresh_plot();
-              refresh_dialog('series');
-              fetch_logs();
-          });
-      }
 
       function fetch_logs() {
           $.each(plot.series, function(id, s) {
@@ -105,33 +40,42 @@
           });
       }
 
-      function refresh_series() {
+      function update_series() {
           for (var yaxis = 0; yaxis < 2; yaxis++) {
               var tbody = $('#series-' + yaxis + ' > tbody');
               tbody.empty();
-              $.each(plot.series, function(id, s) {
-                  if (s.yaxis != yaxis) {
-                      return;
-                  }
+              $.each(plot.series, function(_, series) {
+                  if (series.yaxis != yaxis) return;
+
                   var tr = $('<tr></tr>').appendTo(tbody);
                   $('<td></td>').appendTo(tr).append(
                       $('<input></input>')
-                          .attr('id', 'color-select-' + id)
                           .attr('type', 'color')
                           .attr('class', 'legend-color')
-                          .attr('value', int2hex(s.color))
-                          .attr('onchange', 'update_series(' + id + ')'));
+                          .attr('value', int2hex(series.color))
+                          .on('change', function() {
+                              plot.series_modify(
+                                  series, 'color', hex2int($(this).val()), function() {
+                                      update_series();
+                                  });
+                          }));
                   $('<td></td>').appendTo(tr)
                                 .attr('width', '70%')
-                                .text(s.log.comment + ': ' + s.key);
+                                .text(series.log.comment + ': ' + series.key);
                   $('<td></td>').appendTo(tr).append(
                       $('<button></button>')
                           .text('Delete')
                           .attr('type', 'button')
                           .attr('class', 'btn btn-danger btn-sm pull-right')
-                          .attr('onclick', 'del_series(' + id + ')'));
+                          .on('click', function() {
+                              plot.series_remove(series, function() {
+                                  update_series();
+                              });
+                          }));
               });
           }
+
+          update_dialog('series');
       }
 
       var chart = null;
@@ -215,62 +159,61 @@
           chart.update();
       }
 
-      function refresh_dialog(mode, yaxis) {
-          var log_select = $('#log-select');
-          var key_select = $('#key-select');
-          var color_select = $('#color-select');
-          var add_button = $('#add-button');
+      function update_dialog(mode, yaxis) {
+          var dialog_log = $('#dialog-log');
+          var dialog_key = $('#dialog-key');
+          var dialog_color = $('#dialog-color');
+          var dialog_yaxis = $('input[name=dialog-yaxis]')
+          var dialog_button= $('#dialog-button');
 
           if (mode == 'open') {
-              log_select.prop('disabled', true);
+              dialog_log.prop('disabled', true);
 
-              $.getJSON('/api/logs', function(all_logs) {
-                  log_select.empty();
-                  $('<option></option>').appendTo(log_select)
-                  $.each(all_logs, function(id, l) {
+              logs.fetch(function() {
+                  dialog_log.empty();
+                  $('<option></option>').appendTo(dialog_log)
+                  logs.each(function(log) {
                       $('<option></option>')
-                          .appendTo(log_select)
-                          .attr('value', id)
-                          .text(l.comment);
+                          .appendTo(dialog_log)
+                          .attr('value', log.id)
+                          .text(log.comment);
                   });
-                  log_select.prop('disabled', false);
+                  dialog_log.prop('disabled', false);
               });
           }
 
           if (mode == 'open' || mode == 'log') {
-              key_select.prop('disabled', true);
+              dialog_key.prop('disabled', true);
 
-              var id = log_select.val();
+              var id = dialog_log.val();
               if (id) {
-                  $.getJSON('/api/logs/' + id, function(l) {
-                      logs[id] = l;
-
+                  var log = new Log(id);
+                  log.fetch(function() {
                       var keys = {};
-                      $.each(logs[id].content, function(i, l){
-                          $.each(Object.keys(l), function(j, k) {
+                      $.each(log.content, function(_, l){
+                          $.each(Object.keys(l), function(_, k) {
                               keys[k] = 1;
                           });
                       });
 
-                      key_select.empty();
-                      $.each(Object.keys(keys), function(i, k) {
-                          if (k == 'iteration' || k == 'epoch') {
-                              return;
-                          }
+                      dialog_key.empty();
+                      $.each(Object.keys(keys), function(_, key) {
+                          if (key == 'iteration' || key == 'epoch') return;
+
                           $('<option></option>')
-                              .appendTo(key_select)
-                              .attr('value', k)
-                              .text(k);
+                              .appendTo(dialog_key)
+                              .attr('value', key)
+                              .text(key);
                       });
-                      key_select.prop('disabled', false);
+                      dialog_key.prop('disabled', false);
                   });
               }
           }
 
           if (mode == 'open' || mode == 'series') {
               var used_colors = {};
-              $.each(plot.series, function(id, s) {
-                  used_colors[s.color] = 1;
+              $.each(plot.series, function(_, series) {
+                  used_colors[series.color] = 1;
               });
               var color = Math.floor(Math.random() * (1 << 24));
               for (var i = 0; i < colors.length; i++) {
@@ -279,20 +222,33 @@
                       break;
                   }
               }
-              color_select.val(int2hex(color));
+              dialog_color.val(int2hex(color));
           }
 
-          if (mode == 'open'){
-              $('input[name=yaxis-select]').val([yaxis]);
+          if (mode == 'open') {
+              dialog_yaxis.val([yaxis]);
           }
 
           if (mode == 'open' || mode == 'log') {
-              if (log_select.val()) {
-                  add_button.prop('disabled', false);
+              if (dialog_log.val()) {
+                  dialog_button.prop('disabled', false);
               } else {
-                  add_button.prop('disabled', true);
+                  dialog_button.prop('disabled', true);
               }
           }
+      }
+
+      function add_series() {
+          var series = new Series(
+              null,
+              new Log($('#dialog-log').val()),
+              $('#dialog-key').val(),
+              hex2int($('#dialog-color').val()),
+              $('input[name=dialog-yaxis]:checked').val(),
+          );
+          plot.series_add(series, function() {
+              update_series();
+          });
       }
 
       var timer;
@@ -309,8 +265,7 @@
       }
 
       $(document).ready(function() {
-          fetch_plot();
-          set_timer();
+          plot.fetch(update_series);
       });
     </script>
   </head>
@@ -357,7 +312,7 @@
           <input id="use-logscale-0" type="checkbox" onchange="refresh_plot()"> Logscale
           <button
               class="btn btn-primary btn-sm pull-right" data-toggle="modal"
-              data-target="#add-series" onclick="refresh_dialog('open', 0)">Add</button>
+              data-target="#add-series" onclick="update_dialog('open', 0)">Add</button>
           <div class="clearfix"></div>
         </div>
         <table id="series-0" class="panel-body table">
@@ -371,7 +326,7 @@
           <input id="use-logscale-1" type="checkbox" onchange="refresh_plot()"> Logscale
           <button
               class="btn btn-primary btn-sm pull-right" data-toggle="modal"
-              data-target="#add-series" onclick="refresh_dialog('open', 1)">Add</button>
+              data-target="#add-series" onclick="update_dialog('open', 1)">Add</button>
           <div class="clearfix"></div>
         </div>
         <table id="series-1" class="panel-body table">
@@ -390,15 +345,15 @@
             <h4 class="modal-title" id="modal-label">Add new series</h4>
           </div>
           <div class="modal-body">
-            <select id="log-select" class="form-control" onchange="refresh_dialog('log')"></select>
-            <select id="key-select" class="form-control"></select>
-            <input id="color-select" type="color" class="form-control">
-            <input type="radio" name="yaxis-select" value="0"> Left
-            <input type="radio" name="yaxis-select" value="1"> Right
+            <select id="dialog-log" class="form-control" onchange="update_dialog('log')"></select>
+            <select id="dialog-key" class="form-control"></select>
+            <input id="dialog-color" type="color" class="form-control">
+            <input type="radio" name="dialog-yaxis" value="0"> Left
+            <input type="radio" name="dialog-yaxis" value="1"> Right
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            <button id="add-button" type="button" class="btn btn-primary" onclick="new_series()">Add</button>
+            <button id="dialog-button" type="button" class="btn btn-primary" onclick="add_series()">Add</button>
           </div>
         </div>
       </div>
