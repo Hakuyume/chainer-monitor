@@ -13,7 +13,7 @@
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script>
-      function create_plot() {
+      function new_plot() {
           var comment = $('#comment');
           $.post(
               '/api/plots',
@@ -25,7 +25,7 @@
           );
       }
 
-      function delete_plot(id) {
+      function del_plot(id) {
           $.ajax({
               url: '/api/plots/' + id,
               type: 'DELETE',
@@ -48,12 +48,12 @@
                           .text('Delete')
                           .attr('type', 'button')
                           .attr('class', 'btn btn-danger')
-                          .attr('onclick', 'delete_plot(' + id + ')'));
+                          .attr('onclick', 'del_plot(' + id + ')'));
               });
           });
       }
 
-      function delete_log(id) {
+      function del_log(id) {
           $.ajax({
               url: '/api/logs/' + id,
               type: 'DELETE',
@@ -74,7 +74,7 @@
                           .text('Delete')
                           .attr('type', 'button')
                           .attr('class', 'btn btn-danger')
-                          .attr('onclick', 'delete_log(' + id + ')'));
+                          .attr('onclick', 'del_log(' + id + ')'));
               });
           });
       }
@@ -100,7 +100,7 @@
       <div class="panel panel-default">
         <div class="panel-heading">
           <h2 class="panel-title pull-left">Plot</h2>
-          <button type="button" class="btn btn-primary btm-sm pull-right" onclick="create_plot()">Create</button>
+          <button type="button" class="btn btn-primary btm-sm pull-right" onclick="new_plot()">Create</button>
           <input id="comment" class="pull-right" type="text" placeholder="comment">
           <div class="clearfix"></div>
         </div>

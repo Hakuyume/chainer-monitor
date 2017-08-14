@@ -41,7 +41,7 @@
       var plot = {};
       var series_logs = {};
 
-      function add() {
+      function new_series() {
           var log_select = $('#log-select');
           var color_select = $('#color-select');
           $.post(
@@ -55,7 +55,7 @@
           );
       }
 
-      function delete_(id) {
+      function del_series(id) {
           $.ajax({
               url: '/api/series/' + id,
               type: 'DELETE',
@@ -101,7 +101,7 @@
                                   .text('Delete')
                                   .attr('type', 'button')
                                   .attr('class', 'btn btn-danger btn-sm pull-right')
-                                  .attr('onclick', 'delete_(' + id + ')'))
+                                  .attr('onclick', 'del_series(' + id + ')'))
                           .append(
                               $('<div></div>')
                                   .attr('class', 'clearfix')))
@@ -111,9 +111,9 @@
                           .append(
                               $('<input></input>')
                                   .attr('type', 'color')
-                                  .attr('disabled', 'disabled')
                                   .attr('class', 'form-control')
-                                  .attr('value', int2hex(s.color))))
+                                  .attr('value', int2hex(s.color)
+                                  .attr('onchange', 'update_series(' + id + ')'))))
           });
       }
 
@@ -267,7 +267,7 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Discard</button>
-            <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="add()">Add</button>
+            <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="new_series()">Add</button>
           </div>
         </div>
       </div>
