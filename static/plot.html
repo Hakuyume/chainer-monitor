@@ -223,10 +223,6 @@
           color_select.val(int2hex(color));
 
           $.getJSON('/api/logs', function(logs) {
-              $.each(plot.series, function(id, s) {
-                  delete logs[s.log.id];
-              });
-
               log_select.empty();
               $.each(logs, function(id, l) {
                   $('<option></option>')
