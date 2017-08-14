@@ -142,6 +142,9 @@
           if ($('#use_logscale').is(':checked')) {
               yscale = 'logarithmic';
           }
+          if (chart && chart.options.scales.yAxes[0].type != yscale) {
+              chart = null;
+          }
 
           var xmin = 0;
           var xmax = 0;
@@ -176,11 +179,7 @@
                           line: {tension: 0},
                       },
                       scales: {
-                          xAxes: [{
-                              type: 'linear',
-                              position: 'bottom',
-                              ticks: {min: xmin, max: xmax}
-                          }],
+                          xAxes: [{type: 'linear', position: 'bottom'}],
                           yAxes: [{type: yscale}]
                       },
                       legend: {display: false},
