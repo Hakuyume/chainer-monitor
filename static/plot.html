@@ -77,19 +77,19 @@
           $.getJSON('/api/plots/' + id, function(p) {
               plot = p;
               refresh_series();
+              refresh_plot();
               fetch_logs();
           });
       }
 
       function fetch_logs() {
-          if (! plot.series.lenght) {
-              refresh_plot();
-          }
-
           $.each(plot.series, function(id, s) {
               $.getJSON('/api/logs/' + s.log.id, function(l) {
+                  var new_log = ! series_logs[s.log.id];
                   series_logs[s.log.id] = l;
-                  refresh_plot();
+                  if (new_log) {
+                      refresh_plot();
+                  }
               });
           });
       }
@@ -221,6 +221,7 @@
       $(document).ready(function() {
           fetch_plot();
           setInterval(fetch_logs, 5000);
+          setInterval(refresh_plot, 5000);
       });
     </script>
   </head>
