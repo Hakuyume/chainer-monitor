@@ -19,20 +19,20 @@ class Monitor(bottle.Bottle):
         self.conn = connect_db()
 
         self.get('/api/logs', callback=self.get_logs)
-        self.get('/api/logs/<id_>', callback=self.get_log)
-        self.delete('/api/logs/<id_>', callback=self.del_log)
+        self.get('/api/logs/<id_:int>', callback=self.get_log)
+        self.delete('/api/logs/<id_:int>', callback=self.del_log)
 
         self.get('/api/plots', callback=self.get_plots)
         self.post('/api/plots', callback=self.new_plot)
-        self.get('/api/plots/<id_>', callback=self.get_plot)
-        self.delete('/api/plots/<id_>', callback=self.del_plot)
+        self.get('/api/plots/<id_:int>', callback=self.get_plot)
+        self.delete('/api/plots/<id_:int>', callback=self.del_plot)
 
         self.post('/api/series', callback=self.new_series)
-        self.delete('/api/series/<id_>', callback=self.del_series)
-        self.put('/api/series/<id_>', callback=self.update_series)
+        self.delete('/api/series/<id_:int>', callback=self.del_series)
+        self.put('/api/series/<id_:int>', callback=self.update_series)
 
         self.route('/', callback=self.root)
-        self.route('/plots/<id_>', callback=self.plot)
+        self.route('/plots/<id_:int>', callback=self.plot)
 
     def get_logs(self):
         cur = self.conn.cursor()
