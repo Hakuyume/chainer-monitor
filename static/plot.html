@@ -72,6 +72,8 @@
       }
 
       function fetch_logs() {
+          update_plot();
+
           $.each(plot.series, function(id, s) {
               $.getJSON('/api/logs/' + s.log.id, function(l) {
                   series_logs[s.log.id] = l;
