@@ -72,7 +72,9 @@
       }
 
       function fetch_logs() {
-          update_plot();
+          if (! plot.series.lenght) {
+              update_plot();
+          }
 
           $.each(plot.series, function(id, s) {
               $.getJSON('/api/logs/' + s.log.id, function(l) {
