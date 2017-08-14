@@ -63,6 +63,16 @@
           });
       }
 
+      function update_series(id) {
+          var color_select = $('#color-select-' + id);
+          $.ajax({
+              url: '/api/series/' + id,
+              type: 'PUT',
+              data: $.param({'color': hex2int(color_select.val())}),
+              success: fetch_plot
+          });
+      }
+
       function fetch_plot() {
           $.getJSON('/api/plots/' + id, function(p) {
               plot = p;
@@ -112,10 +122,11 @@
                           .attr('class', 'panel-body')
                           .append(
                               $('<input></input>')
+                                  .attr('id', 'color-select-' + id)
                                   .attr('type', 'color')
                                   .attr('class', 'form-control')
                                   .attr('value', int2hex(s.color))
-                                  .attr('onchange', 'refresh_series(' + id + ')')))
+                                  .attr('onchange', 'update_series(' + id + ')')))
           });
       }
 

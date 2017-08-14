@@ -29,6 +29,7 @@ class Monitor(bottle.Bottle):
 
         self.post('/api/series', callback=self.new_series)
         self.delete('/api/series/<id_>', callback=self.del_series)
+        self.put('/api/series/<id_>', callback=self.update_series)
 
         self.route('/', callback=self.root)
         self.route('/plots/<id_>', callback=self.plot)
@@ -184,6 +185,24 @@ class Monitor(bottle.Bottle):
                 return bottle.HTTPResponse(status=404)
 
             cur.execute(r'DELETE FROM series WHERE id=?', (id_,))
+
+        return {'id': id_}
+
+    def update_series(self, id_):
+        params = bottle.request.params
+
+        color = params.color
+        if color == '':
+            return bottle.HTTPResponse(status=400)
+
+        with self.conn:
+            cur = self.conn.cursor()
+
+            cur.execute(r'SELECT null FROM series WHERE id=?', (id_,))
+            if cur.fetchone() is None:
+                return bottle.HTTPResponse(status=404)
+
+            cur.execute(r'UPDATE series SET color=? WHERE id=?', (color, id_,))
 
         return {'id': id_}
 
