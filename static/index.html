@@ -12,6 +12,7 @@
     </style>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="/js/api.js"></script>
     <script>
       function new_plot() {
           var comment = $('#comment');
@@ -53,19 +54,13 @@
           });
       }
 
-      function del_log(id) {
-          $.ajax({
-              url: '/api/logs/' + id,
-              type: 'DELETE',
-              success: refresh_logs
-          });
-      }
+      var logs = new Logs();
 
-      function refresh_logs() {
-          $.getJSON('/api/logs', function(logs) {
-              tbody = $('#logs > tbody');
+      function update_logs() {
+          logs.fetch(function() {
+              var tbody = $('#logs > tbody');
               tbody.empty();
-              $.each(logs, function(id, log) {
+              logs.each(function(log) {
                   var tr = $('<tr></tr>').appendTo(tbody);
                   $('<td></td>').appendTo(tr).text(log.path);
                   $('<td></td>').appendTo(tr).text(log.comment);
@@ -74,14 +69,16 @@
                           .text('Delete')
                           .attr('type', 'button')
                           .attr('class', 'btn btn-danger')
-                          .attr('onclick', 'del_log(' + id + ')'));
+                          .on('click', function() {
+                              logs.remove(log, update_logs);
+                          }));
               });
           });
       }
 
       $(document).ready(function() {
           refresh_plots();
-          refresh_logs();
+          update_logs();
       });
     </script>
   </head>
