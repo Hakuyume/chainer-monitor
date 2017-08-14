@@ -43,12 +43,14 @@
 
       function new_series() {
           var log_select = $('#log-select');
+          var key_select = $('#key-select');
           var color_select = $('#color-select');
           $.post(
               '/api/series',
               $.param({
                   'plot': id,
                   'log': log_select.val(),
+                  'key': key_select.val(),
                   'color': hex2int(color_select.val()),
               }),
               fetch_plot
@@ -107,7 +109,7 @@
                           .attr('class', 'panel-heading')
                           .append(
                               $('<h3></h3>')
-                                  .text(s.log.comment)
+                                  .text(s.log.comment + ': ' + s.key)
                                   .attr('class', 'panel-title pull-left'))
                           .append(
                               $('<button></button>')
@@ -156,19 +158,23 @@
                   return;
               }
 
-              xmax = Math.max(xmax, log.content[log.content.length - 1][xunit]);
+              var data_with_key = $.map(log.content, function(l) {
+                  if (s.key in l) {
+                      return {x: l[xunit], y: l[s.key]};
+                  }
+              });
+
+              xmax = Math.max(xmax, data_with_key[data_with_key.length - 1].x);
 
               var interval = 1;
-
               var point_limit = $('input[name=point-limit]:checked').val();
-              if (point_limit != '' && log.content.length > point_limit) {
-                  interval = log.content.length / point_limit;
+              if (point_limit != '' && data_with_key.length > point_limit) {
+                  interval = data_with_key.length / point_limit;
               }
 
               var data = [];
-              for (var i = 0; i < log.content.length; i += interval) {
-                  var l = log.content[Math.floor(i)];
-                  data.push({x: l[xunit], y: l['main/loss']});
+              for (var i = 0; i < data_with_key.length; i += interval) {
+                  data.push(data_with_key[Math.floor(i)]);
               }
 
               return {
