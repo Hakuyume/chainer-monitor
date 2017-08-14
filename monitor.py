@@ -5,6 +5,7 @@ import bottle
 import json
 import math
 import os
+import sqlite3
 
 from common import connect_db
 from common import gen_id
@@ -149,19 +150,24 @@ class Monitor(bottle.Bottle):
         if color == '':
             color = 0
 
-        with self.conn:
-            cur = self.conn.cursor()
+        try:
+            with self.conn:
+                cur = self.conn.cursor()
 
-            cur.execute(r'SELECT null FROM plots WHERE id=?', (plot,))
-            if cur.fetchone() is None:
-                return bottle.HTTPResponse(status=404)
+                cur.execute(r'SELECT null FROM plots WHERE id=?', (plot,))
+                if cur.fetchone() is None:
+                    return bottle.HTTPResponse(status=400)
 
-            cur.execute(r'SELECT null FROM logs WHERE id=?', (log,))
-            if cur.fetchone() is None:
-                return bottle.HTTPResponse(status=404)
+                cur.execute(r'SELECT null FROM logs WHERE id=?', (log,))
+                if cur.fetchone() is None:
+                    return bottle.HTTPResponse(status=400)
 
-            cur.execute(
-                r'INSERT INTO series VALUES(?,?,?,?)', (id_, plot, log, color))
+                cur.execute(
+                    r'INSERT INTO series VALUES(?,?,?,?)',
+                    (id_, plot, log, color))
+
+        except sqlite3.IntegrityError:
+            return bottle.HTTPResponse(status=400)
 
         return {
             'id': id_,
