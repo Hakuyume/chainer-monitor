@@ -10,33 +10,33 @@ function Logs() {
 };
 
 Logs.prototype.fetch = function(callback) {
-    var logs = this;
+    var self = this;
 
     $.getJSON('/api/logs', function(res) {
-        logs.logs = [];
+        self.logs = [];
         $.each(res, function(id, log) {
-            logs.logs.push(new Log(id, log.path, log.comment));
+            self.logs.push(new Log(id, log.path, log.comment));
         });
         callback();
     });
 };
 
 Logs.prototype.each = function(callback) {
-    var logs = this;
+    var self = this;
 
-    $.each(logs.logs, function(i, log) {
+    $.each(self.logs, function(_, log) {
         callback(log);
     });
 };
 
 Logs.prototype.remove = function(log, callback) {
-    var logs = this;
+    var self = this;
 
     $.ajax({
         url: '/api/logs/' + log.id,
         type: 'DELETE',
         success: function() {
-            logs.fetch(callback);
+            self.fetch(callback);
         }
     });
 };
