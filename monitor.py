@@ -150,9 +150,6 @@ class Monitor(bottle.Bottle):
         color = params.color
         yaxis = params.yaxis
 
-        if key == '':
-            key = 'main/loss'
-
         try:
             color = int(color if not color == '' else 0)
         except ValueError:
