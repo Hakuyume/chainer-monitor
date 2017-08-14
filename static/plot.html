@@ -145,6 +145,7 @@
                   yscales[yaxis] = 'logarithmic';
               }
               if (chart && chart.options.scales.yAxes[yaxis].type != yscales[yaxis]) {
+                  chart.destroy();
                   chart = null;
               }
           }
