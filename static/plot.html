@@ -9,6 +9,11 @@
       body {
           padding-top: 70px;
       }
+      .legend-color{
+          padding: 0;
+          margin: 0;
+          border: 0;
+      }
     </style>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
@@ -108,15 +113,15 @@
                       return;
                   }
                   var tr = $('<tr></tr>').appendTo(tbody);
-                  $('<td></td>').appendTo(tr).attr('class', 'col-md-2').append(
+                  $('<td></td>').appendTo(tr).append(
                       $('<input></input>')
                           .attr('id', 'color-select-' + id)
                           .attr('type', 'color')
-                          .attr('class', 'form-control')
+                          .attr('class', 'legend-color')
                           .attr('value', int2hex(s.color))
                           .attr('onchange', 'update_series(' + id + ')'));
                   $('<td></td>').appendTo(tr).text(s.log.comment + ': ' + s.key);
-                  $('<td></td>').appendTo(tr).attr('class', 'col-md-2').append(
+                  $('<td></td>').appendTo(tr).append(
                       $('<button></button>')
                           .text('Delete')
                           .attr('type', 'button')
@@ -343,7 +348,7 @@
           </div>
           <div class="clearfix"></div>
         </div>
-        <table id="series-0" class="panel-body table table-bordered">
+        <table id="series-0" class="panel-body table">
           <tbody></tbody>
         </table>
       </div>
@@ -362,7 +367,7 @@
           </div>
           <div class="clearfix"></div>
         </div>
-        <table id="series-1" class="panel-body table table-bordered">
+        <table id="series-1" class="panel-body table">
           <tbody></tbody>
         </table>
       </div>
