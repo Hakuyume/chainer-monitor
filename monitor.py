@@ -146,10 +146,22 @@ class Monitor(bottle.Bottle):
         id_ = gen_id()
         plot = params.plot
         log = params.log
-
+        key = params.key
         color = params.color
-        if color == '':
-            color = 0
+        yaxis = params.yaxis
+
+        if key == '':
+            key = 'main/loss'
+
+        try:
+            color = int(color if not color == '' else 0)
+        except ValueError:
+            return bottle.HTTPResponse(status=400)
+
+        try:
+            yaxis = int(yaxis if not yaxis == '' else 0)
+        except ValueError:
+            return bottle.HTTPResponse(status=400)
 
         try:
             with self.conn:
@@ -164,8 +176,8 @@ class Monitor(bottle.Bottle):
                     return bottle.HTTPResponse(status=400)
 
                 cur.execute(
-                    r'INSERT INTO series VALUES(?,?,?,?)',
-                    (id_, plot, log, color))
+                    r'INSERT INTO series VALUES(?,?,?,?,?,?)',
+                    (id_, plot, log, key, color, yaxis))
 
         except sqlite3.IntegrityError:
             return bottle.HTTPResponse(status=400)
@@ -191,8 +203,28 @@ class Monitor(bottle.Bottle):
     def update_series(self, id_):
         params = bottle.request.params
 
+        key = params.key
         color = params.color
-        if color == '':
+        yaxis = params.yaxis
+
+        update = dict()
+
+        if not key == '':
+            update['key'] = key
+
+        if not color == '':
+            try:
+                update['color'] = int(color)
+            except ValueError:
+                return bottle.HTTPResponse(status=400)
+
+        if not yaxis == '':
+            try:
+                update['yaxis'] = int(yaxis)
+            except ValueError:
+                return bottle.HTTPResponse(status=400)
+
+        if len(update) == 0:
             return bottle.HTTPResponse(status=400)
 
         with self.conn:
@@ -202,7 +234,11 @@ class Monitor(bottle.Bottle):
             if cur.fetchone() is None:
                 return bottle.HTTPResponse(status=404)
 
-            cur.execute(r'UPDATE series SET color=? WHERE id=?', (color, id_,))
+            keys, values = zip(*update.items())
+            keys = ' '.join('{:s}=?'.format(k) for k in keys)
+            cur.execute(
+                r'UPDATE series SET {:s} WHERE id=?'.format(keys),
+                (*values, id_,))
 
         return {'id': id_}
 
