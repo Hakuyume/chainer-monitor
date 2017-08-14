@@ -338,16 +338,11 @@
       </div>
       <div class="panel panel-default">
         <div class="panel-heading">
-          <h3 class="panel-title pull-left">YAxis: Left</h3>
-          <div class="btn-group pull-right" data-toggle="buttons">
-            <label class="btn btn-default btn-sm">
-              <input id="use-logscale-0" type="checkbox"
-                     onchange="refresh_plot()" autocomplete="off">Logscale
-            </label>
-            <button
-                class="btn btn-primary btn-sm" data-toggle="modal"
-                data-target="#add-series" onclick="refresh_dialog('open', 0)">Add</button>
-          </div>
+          <h3 class="panel-title pull-left">YAxis: Left</h3><br>
+          <input id="use-logscale-0" type="checkbox" onchange="refresh_plot()"> Logscale
+          <button
+              class="btn btn-primary btn-sm pull-right" data-toggle="modal"
+              data-target="#add-series" onclick="refresh_dialog('open', 0)">Add</button>
           <div class="clearfix"></div>
         </div>
         <table id="series-0" class="panel-body table">
@@ -357,16 +352,11 @@
 
       <div class="panel panel-default">
         <div class="panel-heading">
-          <h3 class="panel-title pull-left">YAxis: Right</h3>
-          <div class="btn-group pull-right" data-toggle="buttons">
-            <label class="btn btn-default btn-sm">
-              <input id="use-logscale-1" type="checkbox"
-                     onchange="refresh_plot()" autocomplete="off">Logscale
-            </label>
-            <button
-                class="btn btn-primary btn-sm" data-toggle="modal"
-                data-target="#add-series" onclick="refresh_dialog('open', 1)">Add</button>
-          </div>
+          <h3 class="panel-title pull-left">YAxis: Right</h3><br>
+          <input id="use-logscale-1" type="checkbox" onchange="refresh_plot()"> Logscale
+          <button
+              class="btn btn-primary btn-sm pull-right" data-toggle="modal"
+              data-target="#add-series" onclick="refresh_dialog('open', 1)">Add</button>
           <div class="clearfix"></div>
         </div>
         <table id="series-1" class="panel-body table">
@@ -388,8 +378,8 @@
             <select id="log-select" class="form-control" onchange="refresh_dialog('log')"></select>
             <select id="key-select" class="form-control"></select>
             <input id="color-select" type="color" class="form-control">
-            <input type="radio" name="yaxis-select" value="0" autocomplete="off"> Left
-            <input type="radio" name="yaxis-select" value="1" autocomplete="off"> Right
+            <input type="radio" name="yaxis-select" value="0"> Left
+            <input type="radio" name="yaxis-select" value="1"> Right
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
