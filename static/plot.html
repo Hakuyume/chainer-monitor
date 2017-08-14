@@ -39,7 +39,7 @@
       var id = tokens[tokens.length - 1];
 
       var plot = {};
-      var series_logs = {};
+      var logs = {};
 
       function new_series() {
           var log_select = $('#log-select');
@@ -78,6 +78,7 @@
               plot = p;
               refresh_series();
               refresh_plot();
+              refresh_dialog('series');
               fetch_logs();
           });
       }
@@ -85,8 +86,8 @@
       function fetch_logs() {
           $.each(plot.series, function(id, s) {
               $.getJSON('/api/logs/' + s.log.id, function(l) {
-                  var new_log = ! series_logs[s.log.id];
-                  series_logs[s.log.id] = l;
+                  var new_log = ! logs[s.log.id];
+                  logs[s.log.id] = l;
                   if (new_log) {
                       refresh_plot();
                   }
@@ -150,7 +151,7 @@
           var xmax = 0;
 
           var datasets = $.map(plot.series, function(s) {
-              var log = series_logs[s.log.id];
+              var log = logs[s.log.id];
               if (! log) {
                   return;
               }
@@ -204,33 +205,80 @@
           chart.update();
       }
 
-      function refresh_dialog() {
+      function refresh_dialog(mode) {
           var log_select = $('#log-select');
+          var key_select = $('#key-select');
           var color_select = $('#color-select');
+          var add_button = $('#add-button');
 
-          var used_colors = {};
-          $.each(plot.series, function(id, s) {
-              used_colors[s.color] = 1;
-          });
+          if (mode == 'open') {
+              log_select.prop('disabled', true);
 
-          var color = Math.floor(Math.random() * (1 << 24));
-          for (var i = 0; i < colors.length; i++) {
-              if (! used_colors[colors[i]]) {
-                  color = colors[i];
-                  break;
+              $.getJSON('/api/logs', function(all_logs) {
+                  log_select.empty();
+                  $('<option></option>').appendTo(log_select)
+                  $.each(all_logs, function(id, l) {
+                      $('<option></option>')
+                          .appendTo(log_select)
+                          .attr('value', id)
+                          .text(l.comment);
+                  });
+                  log_select.prop('disabled', false);
+              });
+          }
+
+          if (mode == 'open' || mode == 'log') {
+              key_select.prop('disabled', true);
+
+              var id = log_select.val();
+              if (id) {
+                  $.getJSON('/api/logs/' + id, function(l) {
+                      logs[id] = l;
+
+                      var keys = {};
+                      $.each(logs[id].content, function(i, l){
+                          $.each(Object.keys(l), function(j, k) {
+                              keys[k] = 1;
+                          });
+                      });
+
+                      key_select.empty();
+                      $.each(Object.keys(keys), function(i, k) {
+                          if (k == 'iteration' || k == 'epoch') {
+                              return;
+                          }
+                          $('<option></option>')
+                              .appendTo(key_select)
+                              .attr('value', k)
+                              .text(k);
+                      });
+                      key_select.prop('disabled', false);
+                  });
               }
           }
-          color_select.val(int2hex(color));
 
-          $.getJSON('/api/logs', function(logs) {
-              log_select.empty();
-              $.each(logs, function(id, l) {
-                  $('<option></option>')
-                      .appendTo(log_select)
-                      .attr('value', id)
-                      .text(l.comment)
+          if (mode == 'open' || mode == 'series') {
+              var used_colors = {};
+              $.each(plot.series, function(id, s) {
+                  used_colors[s.color] = 1;
               });
-          });
+              var color = Math.floor(Math.random() * (1 << 24));
+              for (var i = 0; i < colors.length; i++) {
+                  if (! used_colors[colors[i]]) {
+                      color = colors[i];
+                      break;
+                  }
+              }
+              color_select.val(int2hex(color));
+          }
+
+          if (mode == 'open' || mode == 'log') {
+              if (log_select.val()) {
+                  add_button.prop('disabled', false);
+              } else {
+                  add_button.prop('disabled', true);
+              }
+          }
       }
 
       $(document).ready(function() {
@@ -278,7 +326,7 @@
           <h2 class="panel-title pull-left">Series</h2>
           <button
               class="btn btn-primary btn-sm pull-right" data-toggle="modal"
-              data-target="#add-series" onclick="refresh_dialog()">Add</button>
+              data-target="#add-series" onclick="refresh_dialog('open')">Add</button>
           <div class="clearfix"></div>
         </div>
         <div id="series" class="panel-body">
@@ -296,13 +344,13 @@
             <h4 class="modal-title" id="modal-label">Add new series</h4>
           </div>
           <div class="modal-body">
-            <select id="log-select" class="form-control">
-            </select>
+            <select id="log-select" class="form-control" onchange="refresh_dialog('log')"></select>
+            <select id="key-select" class="form-control"></select>
             <input id="color-select" type="color" class="form-control">
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Discard</button>
-            <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="new_series()">Add</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button id="add-button" type="button" class="btn btn-primary" onclick="new_series()">Add</button>
           </div>
         </div>
       </div>
