@@ -170,7 +170,7 @@
               dialog_key.prop('disabled', true);
 
               var id = dialog_log.val();
-              if (id) {
+              if (mode != 'open' && id) {
                   var log = new Log(id);
                   log.fetch(function() {
                       var keys = {};
@@ -213,12 +213,10 @@
               dialog_yaxis.val([yaxis]);
           }
 
-          if (mode == 'open' || mode == 'log') {
-              if (dialog_log.val()) {
-                  dialog_button.prop('disabled', false);
-              } else {
-                  dialog_button.prop('disabled', true);
-              }
+          if (mode == 'open') {
+              dialog_button.prop('disabled', true);
+          } else if (mode == 'log') {
+              dialog_button.prop('disabled', ! dialog_log.val());
           }
       }
 
