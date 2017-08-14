@@ -27,19 +27,6 @@
       var plot = new Plot(id);
       var logs = new Logs();
 
-
-      function fetch_logs() {
-          $.each(plot.series, function(id, s) {
-              $.getJSON('/api/logs/' + s.log.id, function(l) {
-                  var new_log = ! logs[s.log.id];
-                  logs[s.log.id] = l;
-                  if (new_log) {
-                      refresh_plot();
-                  }
-              });
-          });
-      }
-
       function update_series() {
           for (var yaxis = 0; yaxis < 2; yaxis++) {
               var tbody = $('#series-' + yaxis + ' > tbody');
@@ -75,14 +62,14 @@
               });
           }
 
+          update_chart();
           update_dialog('series');
       }
 
       var chart = null;
-
-      function refresh_plot() {
+      function update_chart() {
           var xunit = $('input[name=xunit]:checked').val();
-
+          var npoint = $('input[name=npoint]:checked').val();
           var yscales = ['linear', 'linear'];
           for (var yaxis = 0; yaxis < yscales.length; yaxis++) {
               if ($('#use-logscale-' + yaxis).is(':checked')) {
@@ -97,24 +84,21 @@
           var xmin = 0;
           var xmax = 0;
 
-          var datasets = $.map(plot.series, function(s) {
-              var log = logs[s.log.id];
-              if (! log) {
-                  return;
-              }
+          var datasets = [];
+          $.each(plot.series, function(_, series) {
+              if (! series.log.content) return;
 
-              var data_with_key = $.map(log.content, function(l) {
-                  if (s.key in l) {
-                      return {x: l[xunit], y: l[s.key]};
+              var data_with_key = $.map(series.log.content, function(l) {
+                  if (series.key in l) {
+                      return {x: l[xunit], y: l[series.key]};
                   }
               });
 
               xmax = Math.max(xmax, data_with_key[data_with_key.length - 1].x);
 
               var interval = 1;
-              var point_limit = $('input[name=point-limit]:checked').val();
-              if (point_limit != '' && data_with_key.length > point_limit) {
-                  interval = data_with_key.length / point_limit;
+              if (npoint != '' && data_with_key.length > npoint) {
+                  interval = data_with_key.length / npoint;
               }
 
               var data = [];
@@ -122,14 +106,14 @@
                   data.push(data_with_key[Math.floor(i)]);
               }
 
-              return {
-                  label: s.log.comment,
+              datasets.push({
+                  label: series.log.comment,
                   data: data,
-                  borderColor: int2rgb(s.color),
-                  yAxisID: 'y' + s.yaxis,
+                  borderColor: int2rgb(series.color),
+                  yAxisID: 'y' + series.yaxis,
                   pointDot: false,
                   fill: false
-              };
+              });
           });
 
           if (! chart){
@@ -248,24 +232,34 @@
           );
           plot.series_add(series, function() {
               update_series();
+              fetch_logs(update_chart);
+          });
+      }
+
+      function fetch_logs(callback) {
+          $.each(plot.series, function(_, series) {
+              series.log.fetch(callback);
           });
       }
 
       var timer;
       function set_timer() {
-          if ($('#auto-fetch').prop('checked')) {
-              timer = setInterval(
-                  function () {
-                      fetch_logs();
-                      refresh_plot();
-                  }, 5000);
+          if ($('#auto-update').prop('checked')) {
+              timer = setInterval(function() {
+                  fetch_logs();
+                  update_chart();
+              }, 5000);
           } else {
               clearInterval(timer);
           }
       }
 
       $(document).ready(function() {
-          plot.fetch(update_series);
+          plot.fetch(function() {
+              update_series();
+              fetch_logs(update_chart);
+          });
+          set_timer();
       });
     </script>
   </head>
@@ -292,16 +286,16 @@
         <table class="panel-body table">
           <tbody>
             <tr><td>Unit of X axis:</td><td>
-              <input type="radio" name="xunit" value="iteration" onchange="refresh_plot()" checked> Iteration
-              <input type="radio" name="xunit" value="epoch" onchange="refresh_plot()"> Epoch
+              <input type="radio" name="xunit" value="iteration" onchange="update_chart()" checked> Iteration
+              <input type="radio" name="xunit" value="epoch" onchange="update_chart()"> Epoch
             </td></tr>
             <tr><td># points:</td><td>
-              <input type="radio" name="point-limit" value="256" onchange="refresh_plot()" checked> 256
-              <input type="radio" name="point-limit" value="1024" onchange="refresh_plot()"> 1024
-              <input type="radio" name="point-limit" value="" onchange="refresh_plot()"> No limit
+              <input type="radio" name="npoint" value="256" onchange="update_chart()" checked> 256
+              <input type="radio" name="npoint" value="1024" onchange="update_chart()"> 1024
+              <input type="radio" name="npoint" value="" onchange="update_chart()"> No limit
             </td></tr>
-            <tr><td>Auto fetch:</td><td>
-              <input id="auto-fetch" type="checkbox" onchange="set_timer()" autocomplete="off" checked> Enabled
+            <tr><td>Auto update:</td><td>
+              <input id="auto-update" type="checkbox" onchange="set_timer()" autocomplete="off" checked> Enabled
             </td></tr>
           </tbody>
         </table>
@@ -309,7 +303,7 @@
       <div class="panel panel-default">
         <div class="panel-heading">
           <h3 class="panel-title pull-left">YAxis: Left</h3><br>
-          <input id="use-logscale-0" type="checkbox" onchange="refresh_plot()"> Logscale
+          <input id="use-logscale-0" type="checkbox" onchange="update_chart()"> Logscale
           <button
               class="btn btn-primary btn-sm pull-right" data-toggle="modal"
               data-target="#add-series" onclick="update_dialog('open', 0)">Add</button>
@@ -323,7 +317,7 @@
       <div class="panel panel-default">
         <div class="panel-heading">
           <h3 class="panel-title pull-left">YAxis: Right</h3><br>
-          <input id="use-logscale-1" type="checkbox" onchange="refresh_plot()"> Logscale
+          <input id="use-logscale-1" type="checkbox" onchange="update_chart()"> Logscale
           <button
               class="btn btn-primary btn-sm pull-right" data-toggle="modal"
               data-target="#add-series" onclick="update_dialog('open', 1)">Add</button>

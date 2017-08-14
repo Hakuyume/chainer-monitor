@@ -11,7 +11,7 @@ Log.prototype.fetch = function(callback) {
         self.path = res.path;
         self.comment = res.comment;
         self.content = res.content;
-        callback();
+        if (callback) callback();
     });
 };
 
@@ -35,7 +35,7 @@ Logs.prototype.fetch = function(callback) {
             if (id in res) return;
             delete self.logs[id];
         });
-        callback();
+        if (callback) callback();
     });
 };
 
@@ -97,7 +97,7 @@ Plot.prototype.fetch = function(callback) {
             if (id in res.series) return;
             delete self.series[id];
         });
-        callback();
+        if (callback) callback();
     });
 };
 
@@ -158,7 +158,7 @@ Plots.prototype.fetch = function(callback) {
         $.each(res, function(id, plot) {
             self.plots.push(new Plot(id, plot.comment));
         });
-        callback();
+        if (callback) callback();
     });
 };
 
