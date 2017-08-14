@@ -66,25 +66,25 @@
       function fetch_plot() {
           $.getJSON('/api/plots/' + id, function(p) {
               plot = p;
-              update_series();
+              refresh_series();
               fetch_logs();
           });
       }
 
       function fetch_logs() {
           if (! plot.series.lenght) {
-              update_plot();
+              refresh_plot();
           }
 
           $.each(plot.series, function(id, s) {
               $.getJSON('/api/logs/' + s.log.id, function(l) {
                   series_logs[s.log.id] = l;
-                  update_plot();
+                  refresh_plot();
               });
           });
       }
 
-      function update_series() {
+      function refresh_series() {
           var series_panel = $('#series');
           series_panel.empty();
           $.each(plot.series, function(id, s) {
@@ -114,12 +114,12 @@
                               $('<input></input>')
                                   .attr('type', 'color')
                                   .attr('class', 'form-control')
-                                  .attr('value', int2hex(s.color)
-                                  .attr('onchange', 'update_series(' + id + ')'))))
+                                  .attr('value', int2hex(s.color))
+                                  .attr('onchange', 'refresh_series(' + id + ')')))
           });
       }
 
-      function update_plot() {
+      function refresh_plot() {
           var xunit = 'iteration';
           if ($('#use_epoch').is(':checked')) {
               xunit = 'epoch';
@@ -174,7 +174,7 @@
           });
       }
 
-      function update_dialog() {
+      function refresh_dialog() {
           var log_select = $('#log-select');
           var color_select = $('#color-select');
 
@@ -235,8 +235,8 @@
         <div class="panel-heading">Setting</div>
         <div class="panel-body">
           <ul class="list-unstyled">
-            <li><input id="use_epoch" type="checkbox" onchange="update_plot()"> use epoch</li>
-            <li><input id="use_logscale" type="checkbox" onchange="update_plot()"> use log scale</li>
+            <li><input id="use_epoch" type="checkbox" onchange="refresh_plot()"> use epoch</li>
+            <li><input id="use_logscale" type="checkbox" onchange="refresh_plot()"> use log scale</li>
           </ul>
         </div>
       </div>
@@ -245,7 +245,7 @@
           <h2 class="panel-title pull-left">Series</h2>
           <button
               class="btn btn-primary btn-sm pull-right" data-toggle="modal"
-              data-target="#add-series" onclick="update_dialog()">Add</button>
+              data-target="#add-series" onclick="refresh_dialog()">Add</button>
           <div class="clearfix"></div>
         </div>
         <div id="series" class="panel-body">

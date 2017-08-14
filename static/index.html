@@ -19,7 +19,7 @@
               '/api/plots',
               $.param({'comment': comment.val()}),
               function() {
-                  update_plots();
+                  refresh_plots();
                   comment.val('');
               }
           );
@@ -29,11 +29,11 @@
           $.ajax({
               url: '/api/plots/' + id,
               type: 'DELETE',
-              success: update_plots
+              success: refresh_plots
           });
       }
 
-      function update_plots() {
+      function refresh_plots() {
           $.getJSON('/api/plots', function(plots) {
               tbody = $('#plots > tbody');
               tbody.empty();
@@ -57,11 +57,11 @@
           $.ajax({
               url: '/api/logs/' + id,
               type: 'DELETE',
-              success: update_logs
+              success: refresh_logs
           });
       }
 
-      function update_logs() {
+      function refresh_logs() {
           $.getJSON('/api/logs', function(logs) {
               tbody = $('#logs > tbody');
               tbody.empty();
@@ -80,8 +80,8 @@
       }
 
       $(document).ready(function() {
-          update_plots();
-          update_logs();
+          refresh_plots();
+          refresh_logs();
       });
     </script>
   </head>
