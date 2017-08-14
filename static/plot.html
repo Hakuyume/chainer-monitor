@@ -108,7 +108,7 @@
                       return;
                   }
                   var tr = $('<tr></tr>').appendTo(tbody);
-                  $('<td></td>').appendTo(tr).append(
+                  $('<td></td>').appendTo(tr).attr('class', 'col-md-2').append(
                       $('<input></input>')
                           .attr('id', 'color-select-' + id)
                           .attr('type', 'color')
