@@ -109,9 +109,15 @@ class Monitor(bottle.Bottle):
         _, comment = p
 
         series = {
-            id_: {'log': log, 'color': color}
-            for (id_, _, log, color) in
-            cur.execute(r'SELECT * FROM series WHERE plot=?', (id_,))}
+            id_: {
+                'log': {'id': log, 'comment': log_comment},
+                'color': color}
+            for (id_, log, color, log_comment) in
+            cur.execute(
+                r'SELECT series.id, series.log, series.color, logs.comment '
+                r'FROM series INNER JOIN logs ON series.log=logs.id '
+                r'WHERE series.plot=?',
+                (id_,))}
 
         return {
             'id': id_,

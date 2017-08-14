@@ -14,12 +14,6 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.min.js"></script>
     <script>
-      var tokens = location.pathname.split('/');
-      var id = tokens[tokens.length - 1];
-
-      var plot = {};
-      var series_logs = {};
-
       function int2rgb(c) {
           return 'rgb('
                + ((c >> 16) & 0xff) + ','
@@ -41,6 +35,12 @@
 
       var colors = [0xff0000, 0x00ff00, 0x0000ff, 0x808000, 0x008080, 0x800080];
 
+      var tokens = location.pathname.split('/');
+      var id = tokens[tokens.length - 1];
+
+      var plot = {};
+      var series_logs = {};
+
       function add() {
           var log_select = $('#log-select');
           var color_select = $('#color-select');
@@ -51,7 +51,7 @@
                   'log': log_select.val(),
                   'color': hex2int(color_select.val()),
               }),
-              fetch
+              fetch_plot
           );
       }
 
@@ -59,22 +59,114 @@
           $.ajax({
               url: '/api/series/' + id,
               type: 'DELETE',
-              success: fetch
+              success: fetch_plot
           });
       }
 
-      function fetch() {
+      function fetch_plot() {
           $.getJSON('/api/plots/' + id, function(p) {
               plot = p;
+              update_series();
+              fetch_logs();
+          });
+      }
 
-              $.each(plot.series, function(id, s) {
-                  $.getJSON('/api/logs/' + s.log, function(l) {
-                      series_logs[s.log] = l;
-                      update();
-                  });
+      function fetch_logs() {
+          $.each(plot.series, function(id, s) {
+              $.getJSON('/api/logs/' + s.log.id, function(l) {
+                  series_logs[s.log.id] = l;
+                  update_plot();
+              });
+          });
+      }
+
+      function update_series() {
+          var series_panel = $('#series');
+          series_panel.empty();
+          $.each(plot.series, function(id, s) {
+              $('<div></div>')
+                  .attr('class', 'panel panel-default')
+                  .appendTo(series_panel)
+                  .append(
+                      $('<div></div>')
+                          .attr('class', 'panel-heading')
+                          .append(
+                              $('<h3></h3>')
+                                  .text(s.log.comment)
+                                  .attr('class', 'panel-title pull-left'))
+                          .append(
+                              $('<button></button>')
+                                  .text('Delete')
+                                  .attr('type', 'button')
+                                  .attr('class', 'btn btn-danger btn-sm pull-right')
+                                  .attr('onclick', 'delete_(' + id + ')'))
+                          .append(
+                              $('<div></div>')
+                                  .attr('class', 'clearfix')))
+                  .append(
+                      $('<div></div>')
+                          .attr('class', 'panel-body')
+                          .append(
+                              $('<input></input>')
+                                  .attr('type', 'color')
+                                  .attr('disabled', 'disabled')
+                                  .attr('class', 'form-control')
+                                  .attr('value', int2hex(s.color))))
+          });
+      }
+
+      function update_plot() {
+          var xunit = 'iteration';
+          if ($('#use_epoch').is(':checked')) {
+              xunit = 'epoch';
+          }
+
+          var yscale = 'linear';
+          if ($('#use_logscale').is(':checked')) {
+              yscale = 'logarithmic';
+          }
+
+          var xmin = 0;
+          var xmax = 0;
+
+          var datasets = $.map(plot.series, function(s) {
+              var log = series_logs[s.log.id];
+              if (! log) {
+                  return;
+              }
+
+              xmax = Math.max(xmax, log.content[log.content.length - 1][xunit]);
+              var data = $.map(log.content, function(l) {
+                  return {x: l[xunit], y: l['main/loss']};
               });
 
-              update();
+              return {
+                  label: s.log.comment,
+                  data: data,
+                  borderColor: int2rgb(s.color),
+                  pointDot: false,
+                  backgroundColor: 'rgba(0,0,0,0)'
+              };
+          });
+
+          var chart = new Chart($('#plot'), {
+              type: 'line',
+              data: {datasets: datasets},
+              options: {
+                  elements: {
+                      point: {radius: 0},
+                      line: {tension: 0},
+                  },
+                  scales: {
+                      xAxes: [{
+                          type: 'linear',
+                          position: 'bottom',
+                          ticks: {min: xmin, max: xmax}
+                      }],
+                      yAxes: [{type: yscale}]
+                  },
+                  legend: {display: false}
+              }
           });
       }
 
@@ -111,102 +203,9 @@
           });
       }
 
-      function update() {
-          var xunit = 'iteration';
-          if ($('#use_epoch').is(':checked')) {
-              xunit = 'epoch';
-          }
-
-          var yscale = 'linear';
-          if ($('#use_logscale').is(':checked')) {
-              yscale = 'logarithmic';
-          }
-
-          var xmin = 0;
-          var xmax = 0;
-
-          var datasets = $.map(plot.series, function(s) {
-              var log = series_logs[s.log];
-              if (! log) {
-                  return;
-              }
-
-              xmax = Math.max(xmax, log.content[log.content.length - 1][xunit]);
-              var data = $.map(log.content, function(l) {
-                  return {x: l[xunit], y: l['main/loss']};
-              });
-
-              return {
-                  label: log.comment,
-                  data: data,
-                  borderColor: int2rgb(s.color),
-                  pointDot: false,
-                  backgroundColor: 'rgba(0,0,0,0)'
-              };
-          });
-
-          var chart = new Chart($('#plot'), {
-              type: 'line',
-              data: {datasets: datasets},
-              options: {
-                  elements: {
-                      point: {radius: 0},
-                      line: {tension: 0},
-                  },
-                  scales: {
-                      xAxes: [{
-                          type: 'linear',
-                          position: 'bottom',
-                          ticks: {min: xmin, max: xmax}
-                      }],
-                      yAxes: [{type: yscale}]
-                  },
-                  legend: {display: false}
-              }
-          });
-
-          var series_panel = $('#series');
-          series_panel.empty();
-          $.each(plot.series, function(id, s) {
-              var log = series_logs[s.log];
-              if (! log) {
-                  return;
-              }
-
-              $('<div></div>')
-                  .attr('class', 'panel panel-default')
-                  .appendTo(series_panel)
-                  .append(
-                      $('<div></div>')
-                          .attr('class', 'panel-heading')
-                          .append(
-                              $('<h3></h3>')
-                                  .text(log.comment)
-                                  .attr('class', 'panel-title pull-left'))
-                          .append(
-                              $('<button></button>')
-                                  .text('Delete')
-                                  .attr('type', 'button')
-                                  .attr('class', 'btn btn-danger btn-sm pull-right')
-                                  .attr('onclick', 'delete_(' + id + ')'))
-                          .append(
-                              $('<div></div>')
-                                  .attr('class', 'clearfix')))
-                  .append(
-                      $('<div></div>')
-                          .attr('class', 'panel-body')
-                          .append(
-                              $('<input></input>')
-                                  .attr('type', 'color')
-                                  .attr('disabled', 'disabled')
-                                  .attr('class', 'form-control')
-                                  .attr('value', int2hex(s.color))))
-          });
-      }
-
       $(document).ready(function() {
-          fetch();
-          setInterval(fetch, 5000);
+          fetch_plot();
+          setInterval(fetch_logs, 5000);
       });
     </script>
   </head>
@@ -232,8 +231,8 @@
         <div class="panel-heading">Setting</div>
         <div class="panel-body">
           <ul class="list-unstyled">
-            <li><input id="use_epoch" type="checkbox" onChange="update()"> use epoch</li>
-            <li><input id="use_logscale" type="checkbox" onChange="update()"> use log scale</li>
+            <li><input id="use_epoch" type="checkbox" onChange="update_plot()"> use epoch</li>
+            <li><input id="use_logscale" type="checkbox" onChange="update_plot()"> use log scale</li>
           </ul>
         </div>
       </div>
