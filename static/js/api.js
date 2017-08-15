@@ -1,16 +1,39 @@
 const entrypoint = '/api';
 
-class ElementSet {
-    constructor(entrypoint, type) {
+class Element {
+    constructor(id, entrypoint) {
+        this.id = id;
         this._entrypoint = entrypoint;
-        this._type = type;
+    }
+
+    _update(params) {
+        delete params['id'];
+        $.extend(this, params);
+    }
+
+    sync() {
+        return new Promise(
+            (resolve, reject) =>
+                $.getJSON(this._entrypoint + '/' + this.id)
+                .done((data) => {
+                    this._update(data);
+                    resolve();
+                })
+                .fail(reject)
+        );
+    }
+}
+
+class ElementSet {
+    constructor(entrypoint) {
+        this._entrypoint = entrypoint;
         this._ids = null;
         this._elements = {};
     }
 
     get(id) {
         if (!(id in this._elements))
-            this._elements[id] = new this._type(id);
+            this._elements[id] = this._new(id);
         return this._elements[id];
     }
 
@@ -24,7 +47,7 @@ class ElementSet {
                 $.getJSON(this._entrypoint)
                 .done((data) => {
                     this._ids = Object.keys(data);
-                    $.each(data, (id, params) => this.get(id).update(params));
+                    $.each(data, (id, params) => this.get(id)._update(params));
                     resolve();
                 })
                 .fail(reject)
@@ -49,49 +72,27 @@ class ElementSet {
 
 }
 
-class Log {
-    constructor(id) {
-        this.id = id;
-    }
-
-    update(params) {
-        delete params['id'];
-        $.extend(this, params);
-    }
-
-    sync() {
-        return new Promise(
-            (resolve, reject) =>
-                $.getJSON(entrypoint + '/logs/' + this.id)
-                .done((data) => {
-                    this.update(data);
-                    resolve();
-                })
-                .fail(reject)
-        );
-    }
-}
+class Log extends Element {}
 
 class Logs extends ElementSet{
     constructor() {
-        super(entrypoint + '/logs', Log);
+        super(entrypoint + '/logs');
+    }
+
+    _new(id) {
+        return new Log(id, this._entrypoint);
     }
 }
 
-class Plot {
-    constructor(id) {
-        this.id = id;
-    }
-
-    update(params) {
-        delete params['id'];
-        $.extend(this, params);
-    }
-}
+class Plot extends Element {}
 
 class Plots extends ElementSet {
     constructor() {
-        super(entrypoint + '/plots', Plot);
+        super(entrypoint + '/plots');
+    }
+
+    _new(id) {
+        return new Plot(id, this._entrypoint);
     }
 }
 
