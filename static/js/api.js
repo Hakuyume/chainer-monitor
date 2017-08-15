@@ -8,14 +8,14 @@ class ElementSet {
         this._elements = {};
     }
 
-    _get(id) {
+    get(id) {
         if (!(id in this._elements))
             this._elements[id] = new this._type(id);
         return this._elements[id];
     }
 
     each(callback) {
-        $.each(this._ids, (_, id) => callback(this._get(id)));
+        $.each(this._ids, (_, id) => callback(this.get(id)));
     }
 
     sync() {
@@ -24,7 +24,7 @@ class ElementSet {
                 $.getJSON(this._entrypoint)
                 .done((data) => {
                     this._ids = Object.keys(data);
-                    $.each(data, (id, params) => this._get(id).update(params));
+                    $.each(data, (id, params) => this.get(id).update(params));
                     resolve();
                 })
                 .fail(reject)
