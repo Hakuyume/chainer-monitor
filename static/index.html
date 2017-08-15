@@ -61,7 +61,7 @@
                  });
       }
 
-      $(document).ready(function() {
+      $(document).ready(() => {
           monitor.plots.sync().then(update_plots);
           monitor.logs.sync().then(update_logs);
       });
