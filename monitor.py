@@ -27,7 +27,11 @@ class Monitor(bottle.Bottle):
         self.get('/api/plot/<id_:int>', callback=self.get_plot)
         self.delete('/api/plot/<id_:int>', callback=self.del_plot)
 
+        self.get('/api/plot/<plot:int>/series', callback=self.list_series)
         self.post('/api/plot/<plot:int>/series', callback=self.new_series)
+        self.get(
+            '/api/plot/<plot:int>/series/<id_:int>',
+            callback=self.get_series)
         self.delete(
             '/api/plot/<plot:int>/series/<id_:int>',
             callback=self.del_series)
@@ -42,7 +46,7 @@ class Monitor(bottle.Bottle):
     def list_logs(self):
         cur = self.conn.cursor()
         return {
-            id_: {'path': path, 'comment': comment}
+            id_: {'id': id_, 'path': path, 'comment': comment}
             for (id_, path, comment) in
             cur.execute(r'SELECT id, path, comment FROM logs')}
 
@@ -88,7 +92,7 @@ class Monitor(bottle.Bottle):
     def list_plots(self):
         cur = self.conn.cursor()
         return {
-            id_: {'comment': comment}
+            id_: {'id': id_, 'comment': comment}
             for (id_, comment) in
             cur.execute(r'SELECT id, comment FROM plots')}
 
@@ -115,6 +119,7 @@ class Monitor(bottle.Bottle):
 
         series = {
             id_: {
+                'id': id_,
                 'log': {'id': log, 'comment': log_comment},
                 'key': key,
                 'color': color,
@@ -144,6 +149,28 @@ class Monitor(bottle.Bottle):
             cur.execute(r'DELETE FROM series WHERE plot=?', (id_,))
 
         return {'id': id_}
+
+    def list_series(self, plot):
+        cur = self.conn.cursor()
+
+        cur.execute(r'SELECT comment FROM plots WHERE id=?', (plot,))
+        if cur.fetchone() is None:
+            return bottle.HTTPResponse(status=404)
+
+        return {
+            id_: {
+                'id': id_,
+                'log': {'id': log, 'comment': log_comment},
+                'key': key,
+                'color': color,
+                'yaxis': yaxis}
+            for (id_, log, key, color, yaxis, log_comment) in
+            cur.execute(
+                r'SELECT series.id, series.log, '
+                r'series.key, series.color, series.yaxis, logs.comment '
+                r'FROM series INNER JOIN logs ON series.log=logs.id '
+                r'WHERE series.plot=?',
+                (plot,))}
 
     def new_series(self, plot):
         params = bottle.request.params
@@ -184,6 +211,31 @@ class Monitor(bottle.Bottle):
             return bottle.HTTPResponse(status=400)
 
         return {'id': id_}
+
+    def get_series(self, id_):
+        cur = self.conn.cursor()
+
+        cur.execute(
+            r'SELECT log, key, color, yaxis FROM series WHERE id=?', (id_,))
+        s = cur.fetchone()
+        if s is None:
+            return bottle.HTTPResponse(status=404)
+
+        log, key, color, yaxis = s
+
+        cur.execute(r'SELECT comment FROM logs WHERE id=?', (log,))
+        l = cur.fetchone()
+        if l is None:
+            return bottle.HTTPResponse(status=404)
+
+        log_comment, = l
+
+        return {
+            'id': id_,
+            'log': {'id': log, 'comment': log_comment},
+            'key': key,
+            'color': color,
+            'yaxis': yaxis}
 
     def del_series(self, id_, plot):
         with self.conn:
