@@ -97,10 +97,7 @@ class Monitor(bottle.Bottle):
         with self.conn:
             self.conn.execute(r'INSERT INTO plots VALUES(?,?)', (id_, comment))
 
-        return {
-            'id': id_,
-            'comment': comment,
-            'series': dict()}
+        return {'id': id_}
 
     def get_plot(self, id_):
         cur = self.conn.cursor()
@@ -183,11 +180,7 @@ class Monitor(bottle.Bottle):
         except sqlite3.IntegrityError:
             return bottle.HTTPResponse(status=400)
 
-        return {
-            'id': id_,
-            'plot': plot,
-            'log': log,
-            'color': color}
+        return {'id': id_}
 
     def del_series(self, id_):
         with self.conn:
