@@ -22,29 +22,26 @@
     <script src="../js/api.js"></script>
     <script src="../js/color.js"></script>
     <script>
-      var tokens = location.pathname.split('/');
-      var id = tokens[tokens.length - 1];
-      var plot = new Plot(id);
-      var logs = new Logs();
+      const monitor = new Monitor('../api');
+      const url_tokens = location.pathname.split('/');
+      const plot = monitor.plots.get(url_tokens[url_tokens.length - 1]);
 
       function update_series() {
-          for (var yaxis = 0; yaxis < 2; yaxis++) {
-              var tbody = $('#series-' + yaxis + ' > tbody');
+          for (const yaxis of [0, 1]) {
+              const tbody = $('#series-' + yaxis + ' > tbody');
               tbody.empty();
-              $.each(plot.series, function(_, series) {
-                  if (series.yaxis != yaxis) return;
+              for (const series of plot.series) {
+                  if (series.yaxis != yaxis)
+                      continue;
 
-                  var tr = $('<tr></tr>').appendTo(tbody);
+                  const tr = $('<tr></tr>').appendTo(tbody);
                   $('<td></td>').appendTo(tr).append(
                       $('<input></input>')
                           .attr('type', 'color')
                           .attr('class', 'legend-color')
                           .attr('value', int2hex(series.color))
                           .on('change', function() {
-                              plot.series_modify(
-                                  series, 'color', hex2int($(this).val()), function() {
-                                      update_series();
-                                  });
+                              series.modify({color: hex2int($(this).val())}).then(update_series);
                           }));
                   $('<td></td>').appendTo(tr)
                                 .attr('width', '70%')
@@ -54,55 +51,63 @@
                           .text('Delete')
                           .attr('type', 'button')
                           .attr('class', 'btn btn-danger btn-sm pull-right')
-                          .on('click', function() {
-                              plot.series_remove(series, function() {
-                                  update_series();
-                              });
-                          }));
-              });
+                          .on('click', () => plot.series.remove(series).then(update_series)));
+              }
+          }
+
+          const used_colors = new Set();
+          for (const series of plot.series)
+              used_colors.add(series.color);
+          if (used_colors.has(hex2int(dialog.color.val()))) {
+              let color = Math.floor(Math.random() * (1 << 24));
+              for (const c of colors) {
+                  if (!used_colors.has(c)) {
+                      color = c;
+                      break;
+                  }
+              }
+              dialog.color.val(int2hex(color));
           }
 
           update_chart();
-          update_dialog('series');
       }
 
-      var chart = null;
+      let chart = null;
       function update_chart() {
-          var xunit = $('input[name=xunit]:checked').val();
-          var npoint = $('input[name=npoint]:checked').val();
-          var yscales = ['linear', 'linear'];
-          for (var yaxis = 0; yaxis < yscales.length; yaxis++) {
-              if ($('#use-logscale-' + yaxis).is(':checked')) {
+          const xunit = $('input[name=xunit]:checked').val();
+          const npoint = $('input[name=npoint]:checked').val();
+          const yscales = ['linear', 'linear'];
+          for (const yaxis of [0, 1]) {
+              if ($('#use-logscale-' + yaxis).is(':checked'))
                   yscales[yaxis] = 'logarithmic';
-              }
               if (chart && chart.options.scales.yAxes[yaxis].type != yscales[yaxis]) {
                   chart.destroy();
                   chart = null;
               }
           }
 
-          var xmin = 0;
-          var xmax = 0;
+          const xmin = 0;
+          let xmax = 0;
 
-          var datasets = [];
-          $.each(plot.series, function(_, series) {
-              if (! series.log.content) return;
+          const datasets = [];
+          for (const series of plot.series) {
+              if (!series.log.content)
+                  continue;
 
-              var data_with_key = $.map(series.log.content, function(l) {
-                  if (series.key in l) {
-                      return {x: l[xunit], y: l[series.key]};
-                  }
+              const data_with_key = $.map(series.log.content, function(entry) {
+                  if (series.key in entry)
+                      return {x: entry[xunit], y: entry[series.key]};
               });
 
               xmax = Math.max(xmax, data_with_key[data_with_key.length - 1].x);
 
-              var interval = 1;
+              let interval = 1;
               if (npoint != '' && data_with_key.length > npoint) {
                   interval = data_with_key.length / npoint;
               }
 
-              var data = [];
-              for (var i = 0; i < data_with_key.length; i += interval) {
+              const data = [];
+              for (let i = 0; i < data_with_key.length; i += interval) {
                   data.push(data_with_key[Math.floor(i)]);
               }
 
@@ -114,9 +119,9 @@
                   pointDot: false,
                   fill: false
               });
-          });
+          }
 
-          if (! chart){
+          if (!chart){
               chart = new Chart($('#plot'), {
                   type: 'line',
                   data: {datasets: datasets},
@@ -143,120 +148,100 @@
           chart.update();
       }
 
-      function update_dialog(mode, yaxis) {
-          var dialog_log = $('#dialog-log');
-          var dialog_key = $('#dialog-key');
-          var dialog_color = $('#dialog-color');
-          var dialog_yaxis = $('input[name=dialog-yaxis]')
-          var dialog_button= $('#dialog-button');
+      function update_dialog_open(yaxis) {
+          dialog.log.prop('disabled', true);
+          dialog.key.prop('disabled', true);
+          dialog.yaxis.val([yaxis]);
+          dialog.button.prop('disabled', true);
 
-          if (mode == 'open') {
-              dialog_log.prop('disabled', true);
+          monitor.logs.sync().then(() => {
+              dialog.log.empty();
+              $('<option></option>').appendTo(dialog.log);
+              for (const log of monitor.logs)
+                  $('<option></option>')
+                  .appendTo(dialog.log)
+                  .attr('value', log.id)
+                  .text(log.comment);
+              dialog.log.prop('disabled', false);
+          });
+      }
 
-              logs.fetch(function() {
-                  dialog_log.empty();
-                  $('<option></option>').appendTo(dialog_log)
-                  logs.each(function(log) {
-                      $('<option></option>')
-                          .appendTo(dialog_log)
-                          .attr('value', log.id)
-                          .text(log.comment);
-                  });
-                  dialog_log.prop('disabled', false);
-              });
-          }
+      function update_dialog_log(yaxis) {
+          dialog.key.prop('disabled', true);
+          dialog.button.prop('disabled', true);
 
-          if (mode == 'open' || mode == 'log') {
-              dialog_key.prop('disabled', true);
+          const id = dialog.log.val();
+          if (!id)
+              return;
 
-              var id = dialog_log.val();
-              if (mode != 'open' && id) {
-                  var log = new Log(id);
-                  log.fetch(function() {
-                      var keys = {};
-                      $.each(log.content, function(_, l){
-                          $.each(Object.keys(l), function(_, k) {
-                              keys[k] = 1;
-                          });
-                      });
+          const log = monitor.logs.get(id);
+          log.sync().then(() => {
+              const keys = new Set();
+              for (const entry of log.content)
+                  for (const key of Object.keys(entry))
+                      keys.add(key);
 
-                      dialog_key.empty();
-                      $.each(Object.keys(keys), function(_, key) {
-                          if (key == 'iteration' || key == 'epoch') return;
-
-                          $('<option></option>')
-                              .appendTo(dialog_key)
-                              .attr('value', key)
-                              .text(key);
-                      });
-                      dialog_key.prop('disabled', false);
-                  });
+              dialog.key.empty();
+              for (const key of keys) {
+                  if (key == 'iteration' || key == 'epoch')
+                      continue;
+                  $('<option></option>')
+                      .appendTo(dialog.key)
+                      .attr('value', key)
+                      .text(key);
               }
-          }
+              dialog.key.prop('disabled', false);
+          });
+      }
 
-          if (mode == 'open' || mode == 'series') {
-              var used_colors = {};
-              $.each(plot.series, function(_, series) {
-                  used_colors[series.color] = 1;
-              });
-              var color = Math.floor(Math.random() * (1 << 24));
-              for (var i = 0; i < colors.length; i++) {
-                  if (! used_colors[colors[i]]) {
-                      color = colors[i];
-                      break;
-                  }
-              }
-              dialog_color.val(int2hex(color));
-          }
-
-          if (mode == 'open') {
-              dialog_yaxis.val([yaxis]);
-          }
-
-          if (mode == 'open') {
-              dialog_button.prop('disabled', true);
-          } else if (mode == 'log') {
-              dialog_button.prop('disabled', ! dialog_log.val());
-          }
+      function update_dialog_key() {
+          dialog.button.prop('disabled', false);
       }
 
       function add_series() {
-          var series = new Series(
-              null,
-              new Log($('#dialog-log').val()),
-              $('#dialog-key').val(),
-              hex2int($('#dialog-color').val()),
-              $('input[name=dialog-yaxis]:checked').val(),
-          );
-          plot.series_add(series, function() {
-              update_series();
-              fetch_logs(update_chart);
-          });
+          const params = {
+              log: $('#dialog-log').val(),
+              key: $('#dialog-key').val(),
+              color: hex2int($('#dialog-color').val()),
+              yaxis: $('input[name=dialog-yaxis]:checked').val(),
+          };
+          plot.series.add(params).then(update_series);
       }
 
-      function fetch_logs(callback) {
-          $.each(plot.series, function(_, series) {
-              series.log.fetch(callback);
-          });
+      async function sync_logs() {
+          const promises = [];
+          for (const series of plot.series)
+              promises.push(series.log.sync());
+          await Promise.all(promises);
+          update_chart();
       }
 
-      var timer;
+      let timer = null;
       function set_timer() {
           if ($('#auto-update').prop('checked')) {
-              timer = setInterval(function() {
-                  fetch_logs();
-                  update_chart();
-              }, 5000);
+              if (!timer)
+                  timer = setInterval(sync_logs, 5000);
           } else {
               clearInterval(timer);
+              timer = null;
           }
       }
 
-      $(document).ready(function() {
-          plot.fetch(function() {
+      let dialog;
+      $(document).ready(() => {
+          dialog = {
+              log: $('#dialog-log'),
+              key: $('#dialog-key'),
+              color: $('#dialog-color'),
+              yaxis: $('input[name=dialog-yaxis]'),
+              button: $('#dialog-button'),
+          };
+
+          plot.sync().then(() => {
               update_series();
-              fetch_logs(update_chart);
+              sync_logs();
           });
+
           set_timer();
       });
     </script>
@@ -304,7 +289,7 @@
           <input id="use-logscale-0" type="checkbox" onchange="update_chart()"> Logscale
           <button
               class="btn btn-primary btn-sm pull-right" data-toggle="modal"
-              data-target="#add-series" onclick="update_dialog('open', 0)">Add</button>
+              data-target="#add-series" onclick="update_dialog_open(0)">Add</button>
           <div class="clearfix"></div>
         </div>
         <table id="series-0" class="panel-body table">
@@ -318,7 +303,7 @@
           <input id="use-logscale-1" type="checkbox" onchange="update_chart()"> Logscale
           <button
               class="btn btn-primary btn-sm pull-right" data-toggle="modal"
-              data-target="#add-series" onclick="update_dialog('open', 1)">Add</button>
+              data-target="#add-series" onclick="update_dialog_open(1)">Add</button>
           <div class="clearfix"></div>
         </div>
         <table id="series-1" class="panel-body table">
@@ -337,8 +322,8 @@
             <h4 class="modal-title" id="modal-label">Add new series</h4>
           </div>
           <div class="modal-body">
-            <select id="dialog-log" class="form-control" onchange="update_dialog('log')"></select>
-            <select id="dialog-key" class="form-control"></select>
+            <select id="dialog-log" class="form-control" onchange="update_dialog_log()"></select>
+            <select id="dialog-key" class="form-control" onchange="update_dialog_key()"></select>
             <input id="dialog-color" type="color" class="form-control">
             <input type="radio" name="dialog-yaxis" value="0"> Left
             <input type="radio" name="dialog-yaxis" value="1"> Right

@@ -17,4 +17,4 @@ function int2hex(c) {
     return '#' + ('000000' + c).slice(-6);
 }
 
-var colors = [0xff0000, 0x00ff00, 0x0000ff, 0x808000, 0x008080, 0x800080];
+const colors = [0xff0000, 0x00ff00, 0x0000ff, 0x808000, 0x008080, 0x800080];

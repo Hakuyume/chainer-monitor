@@ -53,7 +53,7 @@ class ElementSet {
     }
 
     *[Symbol.iterator]() {
-        for (let id of this._ids)
+        for (const id of this._ids)
             yield this.get(id);
     }
 

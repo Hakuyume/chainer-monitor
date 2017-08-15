@@ -19,7 +19,7 @@
       function update_plots() {
           const tbody = $('#plots > tbody');
           tbody.empty();
-          for (let plot of monitor.plots) {
+          for (const plot of monitor.plots) {
               const tr = $('<tr></tr>').appendTo(tbody);
               $('<td></td>').appendTo(tr).append(
                   $('<a></a>')
@@ -38,7 +38,7 @@
       function update_logs() {
           const tbody = $('#logs > tbody');
           tbody.empty();
-          for (let log of monitor.logs) {
+          for (const log of monitor.logs) {
               const tr = $('<tr></tr>').appendTo(tbody);
               $('<td></td>').appendTo(tr).text(log.path);
               $('<td></td>').appendTo(tr).text(log.comment);
