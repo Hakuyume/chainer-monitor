@@ -4,9 +4,10 @@ class Element {
         this._entrypoint = entrypoint;
     }
 
-    _update(params) {
-        delete params.id;
-        $.extend(this, params);
+    _update(data) {
+        delete data.id;
+        for (const key in data)
+            this[key] = data[key];
     }
 
     sync() {
@@ -43,7 +44,8 @@ class ElementSet {
 
     _update(data) {
         this._ids = Object.keys(data);
-        $.each(data, (id, d) => this.get(id)._update(d));
+        for (const id in data)
+            this.get(id)._update(data[id]);
     }
 
     get(id) {

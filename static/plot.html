@@ -94,10 +94,10 @@
               if (!series.log.content)
                   continue;
 
-              const data_with_key = $.map(series.log.content, function(entry) {
+              const data_with_key = []
+              for (const entry of series.log.content)
                   if (series.key in entry)
-                      return {x: entry[xunit], y: entry[series.key]};
-              });
+                      data_with_key.push({x: entry[xunit], y: entry[series.key]});
 
               xmax = Math.max(xmax, data_with_key[data_with_key.length - 1].x);
 
