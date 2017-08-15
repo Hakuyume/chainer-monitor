@@ -18,24 +18,24 @@ class Monitor(bottle.Bottle):
 
         self.conn = connect_db()
 
-        self.get('/api/logs', callback=self.get_logs)
-        self.get('/api/logs/<id_:int>', callback=self.get_log)
-        self.delete('/api/logs/<id_:int>', callback=self.del_log)
+        self.get('/api/log', callback=self.list_logs)
+        self.get('/api/log/<id_:int>', callback=self.get_log)
+        self.delete('/api/log/<id_:int>', callback=self.del_log)
 
-        self.get('/api/plots', callback=self.get_plots)
-        self.post('/api/plots', callback=self.new_plot)
+        self.get('/api/plot', callback=self.list_plots)
+        self.post('/api/plot', callback=self.new_plot)
         self.get('/api/plots/<id_:int>', callback=self.get_plot)
-        self.delete('/api/plots/<id_:int>', callback=self.del_plot)
+        self.delete('/api/plot/<id_:int>', callback=self.del_plot)
 
         self.post('/api/series', callback=self.new_series)
         self.delete('/api/series/<id_:int>', callback=self.del_series)
         self.put('/api/series/<id_:int>', callback=self.update_series)
 
         self.route('/', callback=self.root)
-        self.route('/plots/<id_:int>', callback=self.plot)
+        self.route('/plot-<id_:int>', callback=self.plot)
         self.route('/<path:path>', callback=self.static)
 
-    def get_logs(self):
+    def list_logs(self):
         cur = self.conn.cursor()
         return {
             id_: {'path': path, 'comment': comment}
@@ -81,7 +81,7 @@ class Monitor(bottle.Bottle):
 
         return {'id': id_}
 
-    def get_plots(self):
+    def list_plots(self):
         cur = self.conn.cursor()
         return {
             id_: {'comment': comment}

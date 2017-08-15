@@ -90,8 +90,8 @@ class Monitor {
     constructor() {
         const entrypoint = '/api';
 
-        this.logs = new Logs(entrypoint + '/logs');
-        this.plots = new Plots(entrypoint + '/plots');
+        this.logs = new Logs(entrypoint + '/log');
+        this.plots = new Plots(entrypoint + '/plot');
     }
 }
 
