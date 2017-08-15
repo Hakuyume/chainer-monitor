@@ -2,6 +2,8 @@
 
 Simple visualizer for Chainer's log.
 
+[Demo](https://hakuyume.github.io/chainer-monitor/)
+
 ## Requirements
 - Python 3
 - bottle (avaiable via pip)
