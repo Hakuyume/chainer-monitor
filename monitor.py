@@ -24,7 +24,7 @@ class Monitor(bottle.Bottle):
 
         self.get('/api/plot', callback=self.list_plots)
         self.post('/api/plot', callback=self.new_plot)
-        self.get('/api/plots/<id_:int>', callback=self.get_plot)
+        self.get('/api/plot/<id_:int>', callback=self.get_plot)
         self.delete('/api/plot/<id_:int>', callback=self.del_plot)
 
         self.post('/api/plot/<plot:int>/series', callback=self.new_series)
