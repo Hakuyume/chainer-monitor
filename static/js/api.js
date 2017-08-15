@@ -88,7 +88,7 @@ class Plots extends ElementSet {
 
 class Monitor {
     constructor() {
-        const entrypoint = '/api';
+        const entrypoint = './api';
 
         this.logs = new Logs(entrypoint + '/log');
         this.plots = new Plots(entrypoint + '/plot');
