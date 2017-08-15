@@ -19,7 +19,7 @@
       function update_plots() {
           const tbody = $('#plots > tbody');
           tbody.empty();
-          monitor.plots.each((plot) => {
+          for (let plot of monitor.plots) {
               const tr = $('<tr></tr>').appendTo(tbody);
               $('<td></td>').appendTo(tr).append(
                   $('<a></a>')
@@ -32,13 +32,13 @@
                       .attr('class', 'btn btn-danger')
                       .on('click', () => monitor.plots.remove(plot).then(update_plots))
               );
-          });
+          }
       }
 
       function update_logs() {
           const tbody = $('#logs > tbody');
           tbody.empty();
-          monitor.logs.each((log) => {
+          for (let log of monitor.logs) {
               const tr = $('<tr></tr>').appendTo(tbody);
               $('<td></td>').appendTo(tr).text(log.path);
               $('<td></td>').appendTo(tr).text(log.comment);
@@ -49,7 +49,7 @@
                       .attr('class', 'btn btn-danger')
                       .on('click', () => monitor.logs.remove(log).then(update_logs))
               );
-          });
+          }
       }
 
       function add_plot() {

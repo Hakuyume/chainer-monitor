@@ -52,8 +52,9 @@ class ElementSet {
         return this._elements[id];
     }
 
-    each(callback) {
-        $.each(this._ids, (_, id) => callback(this.get(id)));
+    *[Symbol.iterator]() {
+        for (let id of this._ids)
+            yield this.get(id);
     }
 
     sync() {
