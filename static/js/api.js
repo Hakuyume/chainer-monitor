@@ -1,5 +1,3 @@
-const entrypoint = '/api';
-
 class Element {
     constructor(id, entrypoint) {
         this.id = id;
@@ -75,10 +73,6 @@ class ElementSet {
 class Log extends Element {}
 
 class Logs extends ElementSet{
-    constructor() {
-        super(entrypoint + '/logs');
-    }
-
     _new(id) {
         return new Log(id, this._entrypoint);
     }
@@ -87,10 +81,6 @@ class Logs extends ElementSet{
 class Plot extends Element {}
 
 class Plots extends ElementSet {
-    constructor() {
-        super(entrypoint + '/plots');
-    }
-
     _new(id) {
         return new Plot(id, this._entrypoint);
     }
@@ -98,8 +88,10 @@ class Plots extends ElementSet {
 
 class Monitor {
     constructor() {
-        this.logs = new Logs();
-        this.plots = new Plots();
+        const entrypoint = '/api';
+
+        this.logs = new Logs(entrypoint + '/logs');
+        this.plots = new Plots(entrypoint + '/plots');
     }
 }
 
