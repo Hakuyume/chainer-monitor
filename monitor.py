@@ -212,7 +212,7 @@ class Monitor(bottle.Bottle):
 
         return {'id': id_}
 
-    def get_series(self, id_):
+    def get_series(self, id_, plot):
         cur = self.conn.cursor()
 
         cur.execute(
