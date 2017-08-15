@@ -14,14 +14,13 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="/js/api.js"></script>
     <script>
-      var plots = new Plots();
-      var logs = new Logs();
+      const monitor = new Monitor();
 
       function update_plots() {
-          var tbody = $('#plots > tbody');
+          const tbody = $('#plots > tbody');
           tbody.empty();
-          plots.each(function(plot) {
-              var tr = $('<tr></tr>').appendTo(tbody);
+          monitor.plots.each((plot) => {
+              const tr = $('<tr></tr>').appendTo(tbody);
               $('<td></td>').appendTo(tr).append(
                   $('<a></a>')
                       .text((plot.comment != '') ? plot.comment : '<no comment>')
@@ -31,17 +30,16 @@
                       .text('Delete')
                       .attr('type', 'button')
                       .attr('class', 'btn btn-danger')
-                      .on('click', function() {
-                          plots.remove(plot, update_plots);
-                      }));
+                      .on('click', () => monitor.plots.remove(plot).then(update_plots))
+              );
           });
       }
 
       function update_logs() {
-          var tbody = $('#logs > tbody');
+          const tbody = $('#logs > tbody');
           tbody.empty();
-          logs.each(function(log) {
-              var tr = $('<tr></tr>').appendTo(tbody);
+          monitor.logs.each((log) => {
+              const tr = $('<tr></tr>').appendTo(tbody);
               $('<td></td>').appendTo(tr).text(log.path);
               $('<td></td>').appendTo(tr).text(log.comment);
               $('<td></td>').appendTo(tr).attr('class', 'col-md-1').append(
@@ -49,24 +47,23 @@
                       .text('Delete')
                       .attr('type', 'button')
                       .attr('class', 'btn btn-danger')
-                      .on('click', function() {
-                          logs.remove(log, update_logs);
-                      }));
+                      .on('click', () => monitor.logs.remove(log).then(update_logs))
+              );
           });
       }
 
       function add_plot() {
-          var text = $('#comment');
-          var plot = new Plot(null, text.val());
-          plots.add(plot, function() {
-              update_plots();
-              text.val('');
-          });
+          const text = $('#comment');
+          monitor.plots.add({comment: text.val()})
+                 .then(() => {
+                     update_plots();
+                     text.val('');
+                 });
       }
 
       $(document).ready(function() {
-          plots.fetch(update_plots);
-          logs.fetch(update_logs);
+          monitor.plots.sync().then(update_plots);
+          monitor.logs.sync().then(update_logs);
       });
     </script>
   </head>
