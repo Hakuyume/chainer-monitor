@@ -199,13 +199,13 @@
       }
 
       function add_series() {
-          const params = {
+          const data = {
               log: $('#dialog-log').val(),
               key: $('#dialog-key').val(),
               color: hex2int($('#dialog-color').val()),
               yaxis: $('input[name=dialog-yaxis]:checked').val(),
           };
-          plot.series.add(params).then(update_series);
+          plot.series.add(data).then(update_series);
       }
 
       async function sync_logs() {
