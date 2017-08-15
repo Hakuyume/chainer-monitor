@@ -38,7 +38,7 @@ class Element {
 class ElementSet {
     constructor(entrypoint) {
         this._entrypoint = entrypoint;
-        this._ids = null;
+        this._ids = [];
         this._elements = {};
     }
 
