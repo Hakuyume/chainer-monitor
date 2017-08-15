@@ -5,7 +5,7 @@ class Element {
     }
 
     _update(params) {
-        delete params['id'];
+        delete params.id;
         $.extend(this, params);
     }
 
@@ -20,6 +20,18 @@ class Element {
                 .fail(reject)
         );
     }
+
+    modify(data) {
+        return new Promise(
+            (resolve, reject) =>
+                $.ajax({
+                    url: this._entrypoint + '/' + this.id,
+                    type: 'PUT',
+                    data: $.param(data)})
+                .done(resolve).fail(reject)
+        ).then(() => this.sync());
+    }
+
 }
 
 class ElementSet {
@@ -27,6 +39,11 @@ class ElementSet {
         this._entrypoint = entrypoint;
         this._ids = null;
         this._elements = {};
+    }
+
+    _update(data) {
+        this._ids = Object.keys(data);
+        $.each(data, (id, d) => this.get(id)._update(d));
     }
 
     get(id) {
@@ -44,18 +61,17 @@ class ElementSet {
             (resolve, reject) =>
                 $.getJSON(this._entrypoint)
                 .done((data) => {
-                    this._ids = Object.keys(data);
-                    $.each(data, (id, params) => this.get(id)._update(params));
+                    this._update(data);
                     resolve();
                 })
                 .fail(reject)
         );
     }
 
-    add(params) {
+    add(data) {
         return new Promise(
             (resolve, reject) =>
-                $.post(this._entrypoint, $.param(params))
+                $.post(this._entrypoint, $.param(data))
                 .done(resolve).fail(reject)
         ).then(() => this.sync());
     }
@@ -78,145 +94,62 @@ class Logs extends ElementSet{
     }
 }
 
-class Plot extends Element {}
+class Series extends Element {
+    constructor(id, entrypoint, logs) {
+        super(id, entrypoint);
+        this._logs = logs;
+    }
+
+    _update(data) {
+        if ('log' in data) {
+            this.log = this._logs.get(data.log.id);
+            this.log._update(data.log);
+            delete data.log;
+        }
+        super._update(data);
+    }
+}
+
+class SeriesSet extends ElementSet{
+    constructor(entrypoint, logs) {
+        super(entrypoint);
+        this._logs = logs;
+    }
+
+    _new(id) {
+        return new Series(id, this._entrypoint, this._logs);
+    }
+}
+
+class Plot extends Element {
+    constructor(id, entrypoint, logs) {
+        super(id, entrypoint);
+        this.series = new SeriesSet(entrypoint + '/' + id + '/series', logs);
+    }
+
+    _update(data) {
+        if ('series' in data) {
+            this.series._update(data.series);
+            delete data.series;
+        }
+        super._update(data);
+    }
+}
 
 class Plots extends ElementSet {
+    constructor(entrypoint, logs) {
+        super(entrypoint);
+        this._logs = logs;
+    }
+
     _new(id) {
-        return new Plot(id, this._entrypoint);
+        return new Plot(id, this._entrypoint, this._logs);
     }
 }
 
 class Monitor {
     constructor(entrypoint) {
         this.logs = new Logs(entrypoint + '/log');
-        this.plots = new Plots(entrypoint + '/plot');
+        this.plots = new Plots(entrypoint + '/plot', this.logs);
     }
 }
-
-// function Series(id, log, key, color, yaxis) {
-//     this.id = id;
-//     this.log = log;
-//     this.key = key;
-//     this.color = color;
-//     this.yaxis = yaxis;
-// }
-
-// function Plot(id, comment) {
-//     this.id = id;
-//     this.comment = comment;
-//     this.series = {};
-// }
-
-// Plot.prototype.fetch = function(callback) {
-//     var self = this;
-
-//     $.getJSON('/api/plots/' + self.id, function(res) {
-//         self.comment = res.comment;
-//         $.each(res.series, function(id, series) {
-//             if (id in self.series) {
-//                 self.series[id].log.comment = series.log.comment;
-//                 self.series[id].key = series.key;
-//                 self.series[id].color = series.color;
-//                 self.series[id].yaxis = series.yaxis;
-//             } else {
-//                 self.series[id] = new Series(
-//                     id,
-//                     new Log(series.log.id, null, series.log.comment),
-//                     series.key,
-//                     series.color,
-//                     series.yaxis);
-//             }
-//         });
-//         $.each(self.series, function(id, _) {
-//             if (id in res.series) return;
-//             delete self.series[id];
-//         });
-//         if (callback) callback();
-//     });
-// };
-
-// Plot.prototype.series_add = function(series, callback) {
-//     var self = this;
-
-//     $.post(
-//         '/api/series',
-//         $.param({
-//             'plot': self.id,
-//             'log': series.log.id,
-//             'key': series.key,
-//             'color': series.color,
-//             'yaxis': series.yaxis,
-//         }),
-//         function() {
-//             self.fetch(callback);
-//         }
-//     );
-// };
-
-// Plot.prototype.series_remove = function(series, callback) {
-//     var self = this;
-
-//     $.ajax({
-//         url: '/api/series/' + series.id,
-//         type: 'DELETE',
-//         success: function() {
-//             self.fetch(callback);
-//         }
-//     });
-// };
-
-// Plot.prototype.series_modify = function(series, key, value, callback) {
-//     var self = this;
-
-//     var data = {};
-//     data[key] = value;
-//     $.ajax({
-//         url: '/api/series/' + series.id,
-//         type: 'PUT',
-//         data: $.param(data),
-//         success: function() {
-//             self.fetch(callback);
-//         }
-//     });
-// };
-
-// function Plots() {
-//     this.plots = [];
-// }
-
-// Plots.prototype.fetch = function(callback) {
-//     var self = this;
-
-//     $.getJSON('/api/plots', function(res) {
-//         self.plots = [];
-//         $.each(res, function(id, plot) {
-//             self.plots.push(new Plot(id, plot.comment));
-//         });
-//         if (callback) callback();
-//     });
-// };
-
-// Plots.prototype.each = function(callback) {
-//     var self = this;
-
-//     $.each(self.plots, function(_, plot) {
-//         callback(plot);
-//     });
-// };
-
-// Plots.prototype.add = function(plot, callback) {
-//     var self = this;
-
-// };
-
-// Plots.prototype.remove = function(plot, callback) {
-//     var self = this;
-
-//     $.ajax({
-//         url: '/api/plots/' + plot.id,
-//         type: 'DELETE',
-//         success: function() {
-//             self.fetch(callback);
-//         }
-//     });
-// };
