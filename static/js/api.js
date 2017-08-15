@@ -1,36 +1,17 @@
 const entrypoint = '/api';
 
-
-class Log {
-    constructor(id) {
-        this.id = id;
-    }
-
-    sync() {
-        return new Promise(
-            (resolve, reject) =>
-                $.getJSON(entrypoint + '/logs/' + this.id)
-                .done((data) => {
-                    this.path = data.path;
-                    this.comment = data.comment;
-                    this.content = data.content;
-                    resolve();
-                })
-                .fail(reject)
-        );
-    }
-}
-
-class Logs {
-    constructor() {
+class ElementSet {
+    constructor(entrypoint, type) {
+        this._entrypoint = entrypoint;
+        this._type = type;
         this._ids = null;
-        this._logs = {};
+        this._elements = {};
     }
 
     _get(id) {
-        if (!(id in this._logs))
-            this._logs[id] = new Log(id);
-        return this._logs[id];
+        if (!(id in this._elements))
+            this._elements[id] = new this._type(id);
+        return this._elements[id];
     }
 
     each(callback) {
@@ -40,61 +21,10 @@ class Logs {
     sync() {
         return new Promise(
             (resolve, reject) =>
-                $.getJSON(entrypoint + '/logs')
+                $.getJSON(this._entrypoint)
                 .done((data) => {
                     this._ids = Object.keys(data);
-                    $.each(data, (id, params) => {
-                        const log = this._get(id);
-                        log.path = params.path;
-                        log.comment = params.comment;
-                    });
-                    resolve();
-                })
-                .fail(reject)
-        );
-    }
-
-    remove(log) {
-        return new Promise(
-            (resolve, reject) =>
-                $.ajax({url: entrypoint + '/logs/' + log.id, type: 'DELETE'})
-                .done(resolve).fail(reject)
-        ).then(() => this.sync());
-    }
-}
-
-class Plot {
-    constructor(id) {
-        this.id = id;
-    }
-}
-
-class Plots {
-    constructor() {
-        this._ids = null;
-        this._plots = {};
-    }
-
-    _get(id) {
-        if (!(id in this._plots))
-            this._plots[id] = new Plot(id);
-        return this._plots[id];
-    }
-
-    each(callback) {
-        $.each(this._ids, (_, id) => callback(this._get(id)));
-    }
-
-    sync() {
-        return new Promise(
-            (resolve, reject) =>
-                $.getJSON(entrypoint + '/plots')
-                .done((data) => {
-                    this._ids = Object.keys(data);
-                    $.each(data, (id, params) => {
-                        const plot = this._get(id);
-                        plot.comment = params.comment;
-                    });
+                    $.each(data, (id, params) => this._get(id).update(params));
                     resolve();
                 })
                 .fail(reject)
@@ -104,17 +34,64 @@ class Plots {
     add(params) {
         return new Promise(
             (resolve, reject) =>
-                $.post(entrypoint + '/plots', $.param(params))
+                $.post(this._entrypoint, $.param(params))
                 .done(resolve).fail(reject)
         ).then(() => this.sync());
     }
 
-    remove(plot) {
+    remove(element) {
         return new Promise(
             (resolve, reject) =>
-                $.ajax({url: entrypoint + '/plots/' + plot.id, type: 'DELETE'})
+                $.ajax({url: this._entrypoint + '/' + element.id, type: 'DELETE'})
                 .done(resolve).fail(reject)
         ).then(() => this.sync());
+    }
+
+}
+
+class Log {
+    constructor(id) {
+        this.id = id;
+    }
+
+    update(params) {
+        delete params['id'];
+        $.extend(this, params);
+    }
+
+    sync() {
+        return new Promise(
+            (resolve, reject) =>
+                $.getJSON(entrypoint + '/logs/' + this.id)
+                .done((data) => {
+                    this.update(data);
+                    resolve();
+                })
+                .fail(reject)
+        );
+    }
+}
+
+class Logs extends ElementSet{
+    constructor() {
+        super(entrypoint + '/logs', Log);
+    }
+}
+
+class Plot {
+    constructor(id) {
+        this.id = id;
+    }
+
+    update(params) {
+        delete params['id'];
+        $.extend(this, params);
+    }
+}
+
+class Plots extends ElementSet {
+    constructor() {
+        super(entrypoint + '/plots', Plot);
     }
 }
 
