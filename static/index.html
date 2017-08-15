@@ -14,7 +14,7 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="./js/api.js"></script>
     <script>
-      const monitor = new Monitor();
+      const monitor = new Monitor('./api');
 
       function update_plots() {
           const tbody = $('#plots > tbody');
@@ -24,7 +24,7 @@
               $('<td></td>').appendTo(tr).append(
                   $('<a></a>')
                       .text((plot.comment != '') ? plot.comment : '<no comment>')
-                      .attr('href', './plot-' + plot.id));
+                      .attr('href', './plot/' + plot.id));
               $('<td></td>').appendTo(tr).attr('class', 'col-md-1').append(
                   $('<button></button>')
                       .text('Delete')
