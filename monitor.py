@@ -27,9 +27,13 @@ class Monitor(bottle.Bottle):
         self.get('/api/plots/<id_:int>', callback=self.get_plot)
         self.delete('/api/plot/<id_:int>', callback=self.del_plot)
 
-        self.post('/api/series', callback=self.new_series)
-        self.delete('/api/series/<id_:int>', callback=self.del_series)
-        self.put('/api/series/<id_:int>', callback=self.update_series)
+        self.post('/api/plot/<plot:int>/series', callback=self.new_series)
+        self.delete(
+            '/api/plot/<plot:int>/series/<id_:int>',
+            callback=self.del_series)
+        self.put(
+            '/api/plot/<plot:int>/series/<id_:int>',
+            callback=self.update_series)
 
         self.route('/', callback=self.root)
         self.route('/plot-<id_:int>', callback=self.plot)
@@ -141,11 +145,10 @@ class Monitor(bottle.Bottle):
 
         return {'id': id_}
 
-    def new_series(self):
+    def new_series(self, plot):
         params = bottle.request.params
 
         id_ = gen_id()
-        plot = params.plot
         log = params.log
         key = params.key
         color = params.color
@@ -182,7 +185,7 @@ class Monitor(bottle.Bottle):
 
         return {'id': id_}
 
-    def del_series(self, id_):
+    def del_series(self, id_, plot):
         with self.conn:
             cur = self.conn.cursor()
 
@@ -194,7 +197,7 @@ class Monitor(bottle.Bottle):
 
         return {'id': id_}
 
-    def update_series(self, id_):
+    def update_series(self, id_, plot):
         params = bottle.request.params
 
         key = params.key
