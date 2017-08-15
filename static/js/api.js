@@ -32,7 +32,6 @@ class Element {
                 .done(resolve).fail(reject)
         ).then(() => this.sync());
     }
-
 }
 
 class ElementSet {
