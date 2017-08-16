@@ -11,26 +11,16 @@ class Element {
     }
 
     sync() {
-        return new Promise(
-            (resolve, reject) =>
-                $.getJSON(this._entrypoint + '/' + this.id)
-                .done((data) => {
-                    this._update(data);
-                    resolve();
-                })
-                .fail(reject)
-        );
+        return fetch(this._entrypoint + '/' + this.id)
+            .then((response) => response.json())
+            .then((data) => this._update(data));
     }
 
     modify(data) {
-        return new Promise(
-            (resolve, reject) =>
-                $.ajax({
-                    url: this._entrypoint + '/' + this.id,
-                    type: 'PUT',
-                    data: $.param(data)})
-                .done(resolve).fail(reject)
-        ).then(() => this.sync());
+        return fetch(
+            this._entrypoint + '/' + this.id,
+            {method: 'PUT', body: $.param(data)})
+            .then(() => this.sync());
     }
 }
 
@@ -59,31 +49,23 @@ class ElementSet {
     }
 
     sync() {
-        return new Promise(
-            (resolve, reject) =>
-                $.getJSON(this._entrypoint)
-                .done((data) => {
-                    this._update(data);
-                    resolve();
-                })
-                .fail(reject)
-        );
+        return fetch(this._entrypoint)
+            .then((response) => response.json())
+            .then((data) => this._update(data));
     }
 
     add(data) {
-        return new Promise(
-            (resolve, reject) =>
-                $.post(this._entrypoint, $.param(data))
-                .done(resolve).fail(reject)
-        ).then(() => this.sync());
+        return fetch(
+            this._entrypoint,
+            {method: 'POST', body: $.param(data)})
+            .then(() => this.sync());
     }
 
     remove(element) {
-        return new Promise(
-            (resolve, reject) =>
-                $.ajax({url: this._entrypoint + '/' + element.id, type: 'DELETE'})
-                .done(resolve).fail(reject)
-        ).then(() => this.sync());
+        return fetch(
+            this._entrypoint + '/' + element.id,
+            {method: 'DELETE'})
+            .then(() => this.sync());
     }
 
 }
