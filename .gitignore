@@ -1,4 +1,3 @@
 __pycache__
 *.db
-log.json
-plot.json
+dummy_data/*.json

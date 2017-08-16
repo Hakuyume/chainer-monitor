@@ -2,6 +2,7 @@
 set -eu
 
 origin=$(cd $(dirname $0); pwd)
+sha256sum -c dummy_data/checksum
 
 tempdir=$(mktemp -d)
 trap "rm -rf $tempdir" EXIT
@@ -40,7 +41,7 @@ done
 
 for target in {log,plot}.json
 do
-    key=$(git hash-object -w $origin/$target)
+    key=$(git hash-object -w $origin/dummy_data/$target)
     git update-index --add --cacheinfo 100644 $key api/$target
 done
 
