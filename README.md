@@ -13,6 +13,7 @@ Simple visualizer for Chainer's log.
 1. Start monitor
     ```
     $ cd chainer-monitor
+    $ git checkout release
     $ ./monitor.py
     ```
 
