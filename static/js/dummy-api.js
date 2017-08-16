@@ -138,10 +138,10 @@ export default class Monitor {
         this.plots = new Plots(entrypoint + '/plot', this.logs);
 
         sync = Promise.all([
-            fetch(entrypoint + '/log.json')
+            fetch('https://github.com/Hakuyume/chainer-monitor/releases/download/0.0.1/log.json')
                 .then((response) => response.json())
                 .then((data) => this.logs._update(data)),
-            fetch(entrypoint + '/plot.json')
+            fetch('https://github.com/Hakuyume/chainer-monitor/releases/download/0.0.1/plot.json')
                 .then((response) => response.json())
                 .then((data) => this.plots._update(data))
         ]);
