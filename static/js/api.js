@@ -1,3 +1,5 @@
+'use strict';
+
 class Element {
     constructor(id, entrypoint) {
         this.id = id;
