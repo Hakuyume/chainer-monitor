@@ -22,12 +22,11 @@ done
 
 perl -pe "s{'./plot\?'}{'./plot.html?'}" -i static/js/index.js
 mv -v static/js/{dummy-,}api.js
-mkdir -p babel browserify
-babel static/js -d babel --presets es2015 --compact true
+export NODE_PATH="${NODE_PATH:-}:static/js"
 for target in index.js plot.js
 do
-    NODE_PATH=babel browserify babel/$target -o browserify/$target
-    key=$(git hash-object -w browserify/$target)
+    browserify static/js/$target -o $target -t [ babelify --presets [ es2015 ] ]
+    key=$(git hash-object -w $target)
     git update-index --add --cacheinfo 100644 $key js/$target
 done
 
