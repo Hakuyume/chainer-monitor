@@ -132,7 +132,7 @@ class Plots extends ElementSet {
     }
 }
 
-class Monitor {
+export default class Monitor {
     constructor(entrypoint) {
         this.logs = new Logs(entrypoint + '/log');
         this.plots = new Plots(entrypoint + '/plot', this.logs);

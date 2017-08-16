@@ -1,7 +1,7 @@
 'use strict';
 
-import {Monitor} from "api";
-import * from "color";
+import Monitor from "api";
+import {hex2int, int2hex, int2rgb, colors} from "color";
 
 const monitor = new Monitor('./api');
 const plot = monitor.plots.get(location.search.slice(1));
