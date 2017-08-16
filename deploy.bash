@@ -26,6 +26,7 @@ mv -v static/js/{dummy-,}api.js
 export NODE_PATH="${NODE_PATH:-}:static/js"
 for target in index.js plot.js
 do
+    perl -0pe 's{^}{import "babel-polyfill";}' -i static/js/$target
     browserify static/js/$target -o $target -t [ babelify --presets [ es2015 ] ]
     key=$(git hash-object -w $target)
     git update-index --add --cacheinfo 100644 $key js/$target
