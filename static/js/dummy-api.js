@@ -140,12 +140,12 @@ export default class Monitor {
         sync = Promise.all([
             fetch(
                 'https://github.com/Hakuyume/chainer-monitor/releases/download/0.0.1/log.json',
-                {mode: 'cors'})
+                {mode: 'cors', follow: 'follow'})
                 .then((response) => response.json())
                 .then((data) => this.logs._update(data)),
             fetch(
                 'https://github.com/Hakuyume/chainer-monitor/releases/download/0.0.1/plot.json',
-                {mode: 'cors'})
+                {mode: 'cors', follow: 'follow'})
                 .then((response) => response.json())
                 .then((data) => this.plots._update(data))
         ]);
