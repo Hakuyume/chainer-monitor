@@ -40,16 +40,16 @@ function update_logs() {
     }
 }
 
-function add_plot() {
-    const text = $('#comment');
-    monitor.plots.add({comment: text.val()})
-        .then(() => {
-            update_plots();
-            text.val('');
-        });
-}
-
 $(document).ready(() => {
     monitor.plots.sync().then(update_plots);
     monitor.logs.sync().then(update_logs);
+
+    $('#plot-add-button').on('click', () => {
+        const text = $('#comment');
+        monitor.plots.add({comment: text.val()})
+            .then(() => {
+                update_plots();
+                text.val('');
+            });
+    });
 });
