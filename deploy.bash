@@ -19,6 +19,7 @@ cd repo
 git config user.name 'anonymous'
 git config user.email ''
 
+# gh-pages
 git read-tree --empty
 
 for target in static/*.html
@@ -50,3 +51,28 @@ parent=$(git rev-parse origin/gh-pages)
 comment="from $(git rev-parse origin/master)"
 commit=$(echo $comment | git commit-tree $tree -p $parent)
 git push origin $commit:gh-pages
+
+# release
+git read-tree --empty
+
+for target in README.md *.py static/*.html
+do
+    key=$(git hash-object -w $target)
+    git update-index --add --cacheinfo 100644 $key $target
+done
+
+export NODE_PATH="${NODE_PATH:-}:static/js"
+for target in {index,plot}.js
+do
+    perl -0pe 's{^}{import "babel-polyfill";}' -i static/js/$target
+    browserify static/js/$target -o $target \
+               -g uglifyify -t [ babelify --presets [ es2015 ] ]
+    key=$(git hash-object -w $target)
+    git update-index --add --cacheinfo 100644 $key static/js/$target
+done
+
+tree=$(git write-tree)
+parent=$(git rev-parse origin/release)
+comment="from $(git rev-parse origin/master)"
+commit=$(echo $comment | git commit-tree $tree -p $parent)
+git push origin $commit:release
