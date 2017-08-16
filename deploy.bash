@@ -10,7 +10,8 @@ npm install \
     browserify \
     babelify \
     babel-preset-es2015 \
-    babel-polyfill
+    babel-polyfill \
+    uglifyify
 
 git clone $origin repo
 cd repo
@@ -32,7 +33,7 @@ for target in index.js plot.js
 do
     perl -0pe 's{^}{import "babel-polyfill";}' -i static/js/$target
     browserify static/js/$target -o $target \
-               -t [ babelify --presets [ es2015 ] --compact true ]
+               -g uglifyify -t [ babelify --presets [ es2015 ] ]
     key=$(git hash-object -w $target)
     git update-index --add --cacheinfo 100644 $key js/$target
 done
