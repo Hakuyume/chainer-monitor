@@ -24,7 +24,7 @@
               $('<td></td>').appendTo(tr).append(
                   $('<a></a>')
                       .text((plot.comment != '') ? plot.comment : '<no comment>')
-                      .attr('href', './plot/' + plot.id));
+                      .attr('href', './plot?' + plot.id));
               $('<td></td>').appendTo(tr).attr('class', 'col-md-1').append(
                   $('<button></button>')
                       .text('Delete')

@@ -19,12 +19,11 @@
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.min.js"></script>
-    <script src="../js/api.js"></script>
-    <script src="../js/color.js"></script>
+    <script src="./js/api.js"></script>
+    <script src="./js/color.js"></script>
     <script>
-      const monitor = new Monitor('../api');
-      const url_tokens = location.pathname.split('/');
-      const plot = monitor.plots.get(url_tokens[url_tokens.length - 1]);
+      const monitor = new Monitor('./api');
+      const plot = monitor.plots.get(location.search.slice(1));
 
       function update_series() {
           for (const yaxis of [0, 1]) {
@@ -253,7 +252,7 @@
     <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
       <div class="container col-md-12">
         <div class="navbar-header">
-          <a class="navbar-brand" href="../">Monitor</a>
+          <a class="navbar-brand" href="./">Monitor</a>
         </div>
         <div class="collapse navbar-collapse" id="navbar">
         </div>

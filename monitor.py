@@ -40,7 +40,7 @@ class Monitor(bottle.Bottle):
             callback=self.update_series)
 
         self.route('/', callback=self.root)
-        self.route('/plot/<id_:int>', callback=self.plot)
+        self.route('/plot', callback=self.plot)
         self.route('/<path:path>', callback=self.static)
 
     def list_logs(self):
@@ -294,7 +294,7 @@ class Monitor(bottle.Bottle):
     def root(self):
         return self.static('index.html')
 
-    def plot(self, id_):
+    def plot(self):
         return self.static('plot.html')
 
     def static(self, path):
