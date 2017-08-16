@@ -20,6 +20,7 @@ git config user.name 'anonymous'
 git config user.email ''
 
 # gh-pages
+git reset --hard
 git read-tree --empty
 
 for target in static/*.html
@@ -53,6 +54,7 @@ commit=$(echo $comment | git commit-tree $tree -p $parent)
 git push origin $commit:gh-pages
 
 # release
+git reset --hard
 git read-tree --empty
 
 for target in README.md *.py static/*.html
