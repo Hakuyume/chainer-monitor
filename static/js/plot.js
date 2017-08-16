@@ -1,5 +1,8 @@
 'use strict';
 
+import {Monitor} from "api";
+import * from "color";
+
 const monitor = new Monitor('./api');
 const plot = monitor.plots.get(location.search.slice(1));
 

@@ -1,6 +1,6 @@
 'use strict';
 
-import {Monitor} from "api.js";
+import {Monitor} from "api";
 
 const monitor = new Monitor('./api');
 
