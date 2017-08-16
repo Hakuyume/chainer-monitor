@@ -6,6 +6,7 @@ origin=$(cd $(dirname $0); pwd)
 tempdir=$(mktemp -d)
 trap "rm -rf $tempdir" EXIT
 cd $tempdir
+npm install --save-dev browserify babelify babel-preset-es2015
 
 git clone $origin repo
 cd repo
