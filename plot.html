@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Plot</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <style>
+      body {
+          padding-top: 70px;
+      }
+      .legend-color{
+          padding: 0;
+          margin: 0;
+          border: 0;
+          background: transparent;
+      }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.min.js"></script>
+    <script src="./js/plot.js"></script>
+  </head>
+  <body>
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container col-md-12">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="./">Monitor</a>
+        </div>
+        <div class="collapse navbar-collapse" id="navbar">
+        </div>
+      </div>
+    </nav>
+
+    <div class="container col-md-9">
+      <canvas id="plot"></canvas>
+    </div>
+    <aside class="col-md-3 sidebar-nav-fixed pull-right">
+      <div class="panel panel-default">
+        <div class="panel-heading"><h3 class="panel-title">General</h3></div>
+        <table class="panel-body table">
+          <tbody>
+            <tr><td>Unit of X axis:</td><td>
+              <input type="radio" name="xunit" value="iteration" onchange="update_chart()" checked> Iteration
+              <input type="radio" name="xunit" value="epoch" onchange="update_chart()"> Epoch
+            </td></tr>
+            <tr><td># points:</td><td>
+              <input type="radio" name="npoint" value="256" onchange="update_chart()" checked> 256
+              <input type="radio" name="npoint" value="1024" onchange="update_chart()"> 1024
+              <input type="radio" name="npoint" value="" onchange="update_chart()"> No limit
+            </td></tr>
+            <tr><td>Auto update:</td><td>
+              <input id="auto-update" type="checkbox" onchange="set_timer()" autocomplete="off" checked> Enabled
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title pull-left">YAxis: Left</h3><br>
+          <input id="use-logscale-0" type="checkbox" onchange="update_chart()"> Logscale
+          <button
+              class="btn btn-primary btn-sm pull-right" data-toggle="modal"
+              data-target="#add-series" onclick="update_dialog_open(0)">Add</button>
+          <div class="clearfix"></div>
+        </div>
+        <table id="series-0" class="panel-body table">
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title pull-left">YAxis: Right</h3><br>
+          <input id="use-logscale-1" type="checkbox" onchange="update_chart()"> Logscale
+          <button
+              class="btn btn-primary btn-sm pull-right" data-toggle="modal"
+              data-target="#add-series" onclick="update_dialog_open(1)">Add</button>
+          <div class="clearfix"></div>
+        </div>
+        <table id="series-1" class="panel-body table">
+          <tbody></tbody>
+        </table>
+      </div>
+    </aside>
+
+    <div class="modal" id="add-series" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">
+              <span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="modal-title" id="modal-label">Add new series</h4>
+          </div>
+          <div class="modal-body">
+            <select id="dialog-log" class="form-control" onchange="update_dialog_log()"></select>
+            <select id="dialog-key" class="form-control" onclick="update_dialog_key()"></select>
+            <input id="dialog-color" type="color" class="form-control">
+            <input type="radio" name="dialog-yaxis" value="0"> Left
+            <input type="radio" name="dialog-yaxis" value="1"> Right
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button id="dialog-button" type="button" class="btn btn-primary" onclick="add_series()">Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

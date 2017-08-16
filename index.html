@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Monitor</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <style>
+      body {
+          padding-top: 70px;
+      }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="./js/index.js"></script>
+  </head>
+  <body>
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">Monitor</a>
+        </div>
+        <div class="collapse navbar-collapse" id="navbar">
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h2 class="panel-title pull-left">Plot</h2>
+          <button type="button" class="btn btn-primary btm-sm pull-right" onclick="add_plot()">Create</button>
+          <input id="comment" class="pull-right" type="text" placeholder="comment">
+          <div class="clearfix"></div>
+        </div>
+        <table class="panel-body table table-bordered table-hover" id="plots">
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h2 class="panel-title">Log</h2>
+        </div>
+        <table class="panel-body table table-bordered table-hover" id="logs">
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>
