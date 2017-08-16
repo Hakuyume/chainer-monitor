@@ -1,10 +1,12 @@
 'use strict';
 
 import Monitor from "api";
-import {hex2int, int2hex, int2rgb, colors} from "color";
+import {hex2int, int2hex, int2rgb} from "color";
 
 const monitor = new Monitor('./api');
 const plot = monitor.plots.get(location.search.slice(1));
+
+const colors = [0xff0000, 0x00ff00, 0x0000ff, 0x808000, 0x008080, 0x800080];
 
 function update_series() {
     for (const yaxis of [0, 1]) {
