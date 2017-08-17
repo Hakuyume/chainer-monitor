@@ -84,14 +84,12 @@ function update_chart() {
         xmax = Math.max(xmax, data_with_key[data_with_key.length - 1].x);
 
         let interval = 1;
-        if (npoint != '' && data_with_key.length > npoint) {
+        if (npoint != '' && data_with_key.length > npoint)
             interval = data_with_key.length / npoint;
-        }
 
         const data = [];
-        for (let i = 0; i < data_with_key.length; i += interval) {
+        for (let i = 0; i < data_with_key.length; i += interval)
             data.push(data_with_key[Math.floor(i)]);
-        }
 
         datasets.push({
             label: series.log.comment,
