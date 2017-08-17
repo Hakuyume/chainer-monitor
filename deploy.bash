@@ -74,7 +74,11 @@ if git diff-index --quiet HEAD -- && test -z "$(git ls-files . --exclude-standar
         for file in $(find $branch -type f -printf '%P ')
         do
             key=$(git hash-object -w $branch/$file)
-            git update-index --add --cacheinfo 100644 $key $file
+            if [[ -x $branch/$file ]]; then
+                git update-index --add --cacheinfo 100755 $key $file
+            else
+                git update-index --add --cacheinfo 100644 $key $file
+            fi
         done
         tree=$(git write-tree)
         parent=$(git rev-parse $branch)
