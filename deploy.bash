@@ -24,6 +24,13 @@ npm install \
     uglifyify
 mkdir js
 export NODE_PATH="${NODE_PATH:-}:js"
+function compile_js() {
+    local src=$1
+    local dst=$2
+    perl -0pe 's{^}{import "babel-polyfill";}' -i $src
+    browserify $src -o $dst \
+               -g uglifyify -t [ babelify --presets [ es2015 ] ]
+}
 
 # gh-pages
 echo 'build gh-pages ...'
@@ -38,9 +45,7 @@ perl -pe "s{'./plot\?'}{'./plot.html?'}" -i js/index.js
 mv js/{dummy-,}api.js
 for target in {index,plot}.js
 do
-    perl -0pe 's{^}{import "babel-polyfill";}' -i js/$target
-    browserify js/$target -o $dist/js/$target \
-               -g uglifyify -t [ babelify --presets [ es2015 ] ]
+    compile_js js/$target $dist/js/$target
 done
 
 # release
@@ -55,9 +60,7 @@ cp $project/static/*.html $dist/static/
 cp $project/static/js/*.js js/
 for target in {index,plot}.js
 do
-    perl -0pe 's{^}{import "babel-polyfill";}' -i js/$target
-    browserify js/$target -o $dist/static/js/$target \
-               -g uglifyify -t [ babelify --presets [ es2015 ] ]
+    compile_js js/$target $dist/static/js/$target
 done
 
 echo 'deploy ...'
