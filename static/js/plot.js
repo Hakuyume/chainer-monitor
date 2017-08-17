@@ -130,7 +130,7 @@ function update_chart() {
     chart.update();
 }
 
-function update_dialog_open(yaxis) {
+function update_dialog(yaxis) {
     dialog.log.prop('disabled', true);
     dialog.key.prop('disabled', true);
     dialog.yaxis.val([yaxis]);
@@ -146,48 +146,6 @@ function update_dialog_open(yaxis) {
             .text(log.comment);
         dialog.log.prop('disabled', false);
     });
-}
-
-function update_dialog_log(yaxis) {
-    dialog.key.prop('disabled', true);
-    dialog.button.prop('disabled', true);
-
-    const id = dialog.log.val();
-    if (!id)
-        return;
-
-    const log = monitor.logs.get(id);
-    log.sync().then(() => {
-        const keys = new Set();
-        for (const entry of log.content)
-            for (const key of Object.keys(entry))
-                keys.add(key);
-
-        dialog.key.empty();
-        for (const key of keys) {
-            if (key == 'iteration' || key == 'epoch')
-                continue;
-            $('<option></option>')
-                .appendTo(dialog.key)
-                .attr('value', key)
-                .text(key);
-        }
-        dialog.key.prop('disabled', false);
-    });
-}
-
-function update_dialog_key() {
-    dialog.button.prop('disabled', false);
-}
-
-function add_series() {
-    const data = {
-        log: $('#dialog-log').val(),
-        key: $('#dialog-key').val(),
-        color: hex2int($('#dialog-color').val()),
-        yaxis: $('input[name=dialog-yaxis]:checked').val(),
-    };
-    plot.series.add(data).then(update_series);
 }
 
 async function sync_logs() {
@@ -211,6 +169,18 @@ function set_timer() {
 
 let dialog;
 $(document).ready(() => {
+    $('input[name=xuint]').on('change', update_chart);
+    $('input[name=npoint]').on('change', update_chart);
+    $('#auto-update').on('change', set_timer);
+    set_timer();
+
+    for (const y of [0, 1]) {
+        $('#use-logscale-' + yaxis)
+            .on('change', () => update_chart());
+        $('#dialog-open-button-' + yaxis)
+            .on('click', () => update_dialog(yaxis));
+    }
+
     dialog = {
         log: $('#dialog-log'),
         key: $('#dialog-key'),
@@ -218,11 +188,56 @@ $(document).ready(() => {
         yaxis: $('input[name=dialog-yaxis]'),
         button: $('#dialog-button'),
     };
+    dialog.log.on('change', () => {
+        dialog.key.prop('disabled', true);
+        dialog.button.prop('disabled', true);
+
+        const id = dialog.log.val();
+        if (!id)
+            return;
+
+        const log = monitor.logs.get(id);
+        log.sync().then(() => {
+            const keys = new Set();
+            for (const entry of log.content)
+                for (const key of Object.keys(entry))
+                    keys.add(key);
+
+            dialog.key.empty();
+            for (const key of keys) {
+                if (key == 'iteration' || key == 'epoch')
+                    continue;
+                $('<option></option>')
+                    .appendTo(dialog.key)
+                    .attr('value', key)
+                    .text(key);
+            }
+            dialog.key.prop('disabled', false);
+        });
+
+        const data = {
+            log: dialog.log.val(),
+            key: dialog.key.val(),
+            color: hex2int(dialog.color.val()),
+            yaxis: $('input[name=dialog-yaxis]:checked').val(),
+        };
+        plot.series.add(data).then(update_series);
+    });
+    dialog.key.on('click', () => {
+        dialog.button.prop('disabled', false);
+    });
+    dialog.button.on('click', () => {
+        const data = {
+            log: dialog.log.val(),
+            key: dialog.key.val(),
+            color: hex2int(dialog.color.val()),
+            yaxis: $('input[name=dialog-yaxis]:checked').val(),
+        };
+        plot.series.add(data).then(update_series);
+    });
 
     plot.sync().then(() => {
         update_series();
         sync_logs();
     });
-
-    set_timer();
 });
