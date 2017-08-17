@@ -59,7 +59,7 @@ done
 cp -r dist $project/
 
 cd $project
-if git diff-index --quiet HEAD -- && git ls-files . --exclude-standard --others | grep ''; then
+if git diff-index --quiet HEAD -- && test -z "$(git ls-files . --exclude-standard --others)"; then
     cd dist
     for branch in *
     do
