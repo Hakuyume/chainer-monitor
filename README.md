@@ -40,16 +40,17 @@ $ gunicorn monitor:app --bind :8080 --workers 4
 
 ### Training on remote server, viewing from local machine.
 
-- @ remote server
+1. SSH to remote server with port forwarding option
     ```
-    $ ./monitor.py
-    $ ./register.py ~/chainer/examples/mnist/result/log --comment mnist
-    $ cd ~/chainer/examples/mnist/
-    $ python train_mnist.py
+    [local]$ ssh remote -L 8080:localhost:8080
     ```
 
-- @ local machine
+2. Start monitor and training
     ```
-    $ ssh remote -L 8080:localhost:8080
+    [remote]$. /monitor.py
+    [remote]$ ./register.py ~/chainer/examples/mnist/result/log --comment mnist
+    [remote]$ cd ~/chainer/examples/mnist/
+    [remote]$ python train_mnist.py
     ```
-    Open http://localhost:8080/
+
+3. Open http://localhost:8080/
