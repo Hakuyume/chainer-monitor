@@ -68,6 +68,8 @@ if git diff-index --quiet HEAD -- && test -z "$(git ls-files . --exclude-standar
     cd dist
     for branch in *
     do
+        echo "commit to $branch ..."
+
         git read-tree --empty
         for file in $(find $branch -type f -printf '%P ')
         do
@@ -78,7 +80,7 @@ if git diff-index --quiet HEAD -- && test -z "$(git ls-files . --exclude-standar
         parent=$(git rev-parse $branch)
         comment="from $(git rev-parse HEAD)"
         commit=$(git commit-tree $tree -p $parent -m "$comment")
-        git branch -vf $branch $commit
+        git branch -f $branch $commit
     done
 
     git reset
