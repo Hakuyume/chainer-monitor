@@ -1,5 +1,12 @@
 'use strict';
 
+function _param(data) {
+    return Object.keys(data)
+        .map((key) =>
+             encodeURIComponent(key) + '=' + encodeURIComponent(data[key]))
+        .join('&');
+}
+
 class Element {
     constructor(id, entrypoint) {
         this.id = id;
@@ -21,7 +28,7 @@ class Element {
     modify(data) {
         return fetch(
             this._entrypoint + '/' + this.id,
-            {method: 'PUT', body: $.param(data)})
+            {method: 'PUT', body: _param(data)})
             .then(() => this.sync());
     }
 }
@@ -59,7 +66,7 @@ class ElementSet {
     add(data) {
         return fetch(
             this._entrypoint,
-            {method: 'POST', body: $.param(data)})
+            {method: 'POST', body: _param(data)})
             .then(() => this.sync());
     }
 
