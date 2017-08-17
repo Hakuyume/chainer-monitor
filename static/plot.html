@@ -41,16 +41,16 @@
         <table class="panel-body table">
           <tbody>
             <tr><td>Unit of X axis:</td><td>
-              <input type="radio" name="xunit" value="iteration" onchange="update_chart()" checked> Iteration
-              <input type="radio" name="xunit" value="epoch" onchange="update_chart()"> Epoch
+              <input type="radio" name="xunit" value="iteration" checked> Iteration
+              <input type="radio" name="xunit" value="epoch"> Epoch
             </td></tr>
             <tr><td># points:</td><td>
-              <input type="radio" name="npoint" value="256" onchange="update_chart()" checked> 256
-              <input type="radio" name="npoint" value="1024" onchange="update_chart()"> 1024
-              <input type="radio" name="npoint" value="" onchange="update_chart()"> No limit
+              <input type="radio" name="npoint" value="256" checked> 256
+              <input type="radio" name="npoint" value="1024"> 1024
+              <input type="radio" name="npoint" value=""> No limit
             </td></tr>
             <tr><td>Auto update:</td><td>
-              <input id="auto-update" type="checkbox" onchange="set_timer()" autocomplete="off" checked> Enabled
+              <input id="auto-update" type="checkbox" autocomplete="off" checked> Enabled
             </td></tr>
           </tbody>
         </table>
@@ -58,10 +58,11 @@
       <div class="panel panel-default">
         <div class="panel-heading">
           <h3 class="panel-title pull-left">YAxis: Left</h3><br>
-          <input id="use-logscale-0" type="checkbox" onchange="update_chart()"> Logscale
+          <input id="use-logscale-0" type="checkbox"> Logscale
           <button
+              id="dialog-open-button-0"
               class="btn btn-primary btn-sm pull-right" data-toggle="modal"
-              data-target="#add-series" onclick="update_dialog_open(0)">Add</button>
+              data-target="#add-series">Add</button>
           <div class="clearfix"></div>
         </div>
         <table id="series-0" class="panel-body table">
@@ -72,10 +73,11 @@
       <div class="panel panel-default">
         <div class="panel-heading">
           <h3 class="panel-title pull-left">YAxis: Right</h3><br>
-          <input id="use-logscale-1" type="checkbox" onchange="update_chart()"> Logscale
+          <input id="use-logscale-1" type="checkbox"> Logscale
           <button
+              id="dialog-open-button-1"
               class="btn btn-primary btn-sm pull-right" data-toggle="modal"
-              data-target="#add-series" onclick="update_dialog_open(1)">Add</button>
+              data-target="#add-series">Add</button>
           <div class="clearfix"></div>
         </div>
         <table id="series-1" class="panel-body table">
@@ -94,15 +96,15 @@
             <h4 class="modal-title" id="modal-label">Add new series</h4>
           </div>
           <div class="modal-body">
-            <select id="dialog-log" class="form-control" onchange="update_dialog_log()"></select>
-            <select id="dialog-key" class="form-control" onclick="update_dialog_key()"></select>
+            <select id="dialog-log" class="form-control"></select>
+            <select id="dialog-key" class="form-control"></select>
             <input id="dialog-color" type="color" class="form-control">
             <input type="radio" name="dialog-yaxis" value="0"> Left
             <input type="radio" name="dialog-yaxis" value="1"> Right
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            <button id="dialog-button" type="button" class="btn btn-primary" onclick="add_series()">Add</button>
+            <button id="dialog-button" type="button" class="btn btn-primary"">Add</button>
           </div>
         </div>
       </div>
