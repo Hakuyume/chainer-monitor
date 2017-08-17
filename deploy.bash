@@ -6,11 +6,13 @@ export GIT_AUTHOR_EMAIL=
 export GIT_COMMITTER_NAME=$GIT_AUTHOR_NAME
 export GIT_COMMITTER_EMAIL=$GIT_AUTHOR_EMAIL
 
+echo 'check project directory ...'
 project=$(cd $(dirname $0); pwd)
 cd $project
 sha256sum -c dummy_data/checksum
 rm -rf $project/dist
 
+echo 'setup build directory ...'
 builddir=$(mktemp -d)
 trap "rm -rf $builddir" EXIT
 cd $builddir
@@ -24,6 +26,7 @@ mkdir js
 export NODE_PATH="${NODE_PATH:-}:js"
 
 # gh-pages
+echo 'build gh-pages ...'
 dist=dist/gh-pages
 mkdir -p $dist $dist/{api,js}
 
@@ -41,6 +44,7 @@ do
 done
 
 # release
+echo 'build release ...'
 dist=dist/release
 mkdir -p $dist $dist/static $dist/static/js
 
@@ -56,7 +60,8 @@ do
                -g uglifyify -t [ babelify --presets [ es2015 ] ]
 done
 
-cp -r dist $project/
+echo 'deploy ...'
+cp -vr dist $project/
 
 cd $project
 if git diff-index --quiet HEAD -- && test -z "$(git ls-files . --exclude-standard --others)"; then
@@ -73,8 +78,10 @@ if git diff-index --quiet HEAD -- && test -z "$(git ls-files . --exclude-standar
         parent=$(git rev-parse $branch)
         comment="from $(git rev-parse HEAD)"
         commit=$(git commit-tree $tree -p $parent -m "$comment")
-        git branch -f $branch $commit
+        git branch -vf $branch $commit
     done
 
     git reset
+else
+    echo 'skip commiting (project directory is dirty)'
 fi
