@@ -147,9 +147,12 @@ function update_dialog(yaxis) {
 }
 
 async function sync_logs() {
-    const promises = [];
+    const logs = new Set();
     for (const series of plot.series)
-        promises.push(series.log.sync());
+        logs.add(series.log);
+    const promises = [];
+    for (const log of logs)
+        promises.push(log.sync());
     await Promise.all(promises);
     update_chart();
 }
