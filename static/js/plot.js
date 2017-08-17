@@ -212,14 +212,6 @@ $(document).ready(() => {
             }
             dialog.key.prop('disabled', false);
         });
-
-        const data = {
-            log: dialog.log.val(),
-            key: dialog.key.val(),
-            color: hex2int(dialog.color.val()),
-            yaxis: $('input[name=dialog-yaxis]:checked').val(),
-        };
-        plot.series.add(data).then(update_series);
     });
     dialog.key.on('click', () => {
         dialog.button.prop('disabled', false);
