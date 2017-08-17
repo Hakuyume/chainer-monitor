@@ -31,6 +31,13 @@ Simple visualizer for Chainer's log.
 
 ## Advanced usage
 
+### Use multiple workers for performance
+
+```
+$ pip install -U gunicorn
+$ gunicorn monitor:app --bind :8080 --workers 4
+```
+
 ### Training on remote server, viewing from local machine.
 
 - @ remote server
