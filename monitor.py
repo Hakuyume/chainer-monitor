@@ -303,14 +303,11 @@ class Monitor(bottle.Bottle):
             root=os.path.join(os.path.dirname(__file__), 'static'))
 
 
-def main():
+app = Monitor()
+
+if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--port', type=int, default=8080)
     args = parser.parse_args()
 
-    app = Monitor()
     app.run(port=args.port)
-
-
-if __name__ == '__main__':
-    main()
