@@ -174,7 +174,7 @@ $(document).ready(() => {
     $('#auto-update').on('change', set_timer);
     set_timer();
 
-    for (const y of [0, 1]) {
+    for (const yaxis of [0, 1]) {
         $('#use-logscale-' + yaxis)
             .on('change', () => update_chart());
         $('#dialog-open-button-' + yaxis)
