@@ -114,7 +114,7 @@ class LogList extends React.Component {
                       bsSize="small"
                       className="pull-right"
                       onClick={() =>
-                               this.logs.remove(plot)
+                               this.logs.remove(log)
                                .then(() => this.setState())}
                                >Delete</Button>
                   </td>
