@@ -1,4 +1,9 @@
 __pycache__
 *.db
-dist/
 dummy_data/*.json
+
+build/
+dist/
+
+package-lock.json
+node_modules/

@@ -7,62 +7,52 @@ export GIT_COMMITTER_NAME=$GIT_AUTHOR_NAME
 export GIT_COMMITTER_EMAIL=$GIT_AUTHOR_EMAIL
 
 echo 'check project directory ...'
-project=$(cd $(dirname $0); pwd)
-cd $project
+cd $(dirname $0)
 sha256sum -c dummy_data/checksum
-rm -rf $project/dist
+rm -rf dist
 
 echo 'setup build directory ...'
-builddir=$(mktemp -d)
-trap "rm -rf $builddir" EXIT
-cd $builddir
-npm install \
-    browserify \
-    babelify \
-    babel-preset-es2015 \
-    babel-preset-react
-mkdir js
-export NODE_PATH="${NODE_PATH:-}:js"
+mkdir -p build/lib
+trap "rm -rf build" EXIT
 function compile_js() {
-    browserify $1 -o $2 \
+    NODE_PATH="${NODE_PATH:-}:build/lib" browserify $1 -o $2 \
                -t [ babelify --presets [ es2015 react ] ]
 }
 
 # gh-pages
 echo 'build gh-pages ...'
-dist=dist/gh-pages
+dist=build/dist/gh-pages
 mkdir -p $dist $dist/{api,js}
 
-cp $project/static/*.html $dist/
-cp $project/dummy_data/{log,plot}.json $dist/api/
+cp static/*.html $dist/
+cp dummy_data/{log,plot}.json $dist/api/
 
-cp $project/static/js/*.js js/
-perl -pe "s{'./plot\?'}{'./plot.html?'}" -i js/index.js
-mv js/{dummy-,}api.js
+cp static/js/*.js build/lib/
+mv build/lib/{dummy-,}api.js
+perl -pe "s{'./plot\?'}{'./plot.html?'}" -i build/lib/index.js
 for target in {index,plot}.js
 do
-    compile_js js/$target $dist/js/$target
+    compile_js build/lib/$target $dist/js/$target
 done
 
 # release
 echo 'build release ...'
-dist=dist/release
+dist=build/dist/release
 mkdir -p $dist $dist/static $dist/static/js
 
-cp $project/README.md $dist/
-cp $project/*.py $dist/
-cp $project/static/*.html $dist/static/
+cp README.md $dist/
+cp *.py $dist/
+cp static/*.html $dist/static/
 
-cp $project/static/js/*.js js/
+cp static/js/*.js build/lib/
 for target in {index,plot}.js
 do
-    compile_js js/$target $dist/static/js/$target
+    compile_js build/lib/$target $dist/static/js/$target
 done
 
 echo 'deploy ...'
-cp -vr dist $project/
+cp -vr build/dist .
 
-cd $project
 if git diff-index --quiet HEAD -- && test -z "$(git ls-files . --exclude-standard --others)"; then
     cd dist
     for branch in *
