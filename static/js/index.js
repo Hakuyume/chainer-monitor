@@ -562,7 +562,7 @@ var LogList = function (_React$Component3) {
             var _iteratorError2 = undefined;
 
             try {
-                for (var _iterator2 = this.logs[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                var _loop2 = function _loop2() {
                     var log = _step2.value;
 
                     rows.push(React.createElement(
@@ -588,7 +588,7 @@ var LogList = function (_React$Component3) {
                                     bsSize: 'small',
                                     className: 'pull-right',
                                     onClick: function onClick() {
-                                        return _this7.logs.remove(plot).then(function () {
+                                        return _this7.logs.remove(log).then(function () {
                                             return _this7.setState();
                                         });
                                     }
@@ -597,6 +597,10 @@ var LogList = function (_React$Component3) {
                             )
                         )
                     ));
+                };
+
+                for (var _iterator2 = this.logs[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                    _loop2();
                 }
             } catch (err) {
                 _didIteratorError2 = true;
