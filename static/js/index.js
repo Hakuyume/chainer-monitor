@@ -61,7 +61,11 @@ class PlotList extends React.Component {
         for (const plot of this.plots) {
             rows.push(
                 <tr>
-                  <td>{(plot.comment != '') ? plot.comment : '<no comment>'}</td>
+                  <td>
+                    <a href={'./plot?' + plot.id}>
+                      {(plot.comment != '') ? plot.comment : '<no comment>'}
+                    </a>
+                  </td>
                   <td>
                     <Button
                       bsStyle="danger"
