@@ -19,17 +19,12 @@ cd $builddir
 npm install \
     browserify \
     babelify \
-    babel-preset-es2015 \
-    babel-polyfill \
-    uglifyify
+    babel-preset-es2015
 mkdir js
 export NODE_PATH="${NODE_PATH:-}:js"
 function compile_js() {
-    local src=$1
-    local dst=$2
-    perl -0pe 's{^}{import "babel-polyfill";}' -i $src
-    browserify $src -o $dst \
-               -g uglifyify -t [ babelify --presets [ es2015 ] ]
+    browserify $1 -o $2 \
+               -t [ babelify --presets [ es2015 ] ]
 }
 
 # gh-pages
